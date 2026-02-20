@@ -1,1 +1,95 @@
-# music-roulette
+# Music Roulette 🎵
+
+Music quiz game costruito con Next.js 15 App Router + React 19.  
+Ascolta il preview di 30 secondi e indovina artista + titolo prima di perdere le 3 vite.
+
+## Stack
+
+- **Next.js 15** (App Router, Server Components, Route Handlers, Turbopack)
+- **React 19** (hook `use()` per Promise nei Client Components)
+- **TypeScript** strict mode
+- **Deezer API** – chart pubblica, niente auth necessaria
+- **Jest + Testing Library** per unit/component test
+- **Playwright** per E2E
+
+## Setup
+
+```bash
+# 1. Installa le dipendenze
+npm install
+
+# 2. Copia le env vars (già configurate per localhost)
+cp .env.example .env.local
+
+# 3. Avvia il dev server (Turbopack abilitato di default)
+npm run dev
+```
+
+Apri [http://localhost:3000](http://localhost:3000).
+
+## Test
+
+```bash
+# Unit + component tests
+npm test
+
+# E2E (richiede il dev server in esecuzione)
+npm run test:e2e
+
+# Installa i browser Playwright (prima volta)
+npx playwright install
+```
+
+## Struttura
+
+```
+app/
+├── page.tsx              # Homepage — RSC puro, zero JS client
+├── game/page.tsx         # Game shell — RSC con Suspense + Promise non-awaited
+├── api/track/route.ts    # Route Handler — fetch Deezer server-side
+└── globals.css
+
+components/
+├── GameBoard.tsx         # Logica di gioco — usa React 19 use() hook
+├── AudioPlayer.tsx       # Player accessibile (keyboard + screen reader)
+├── ChoiceList.tsx        # Opzioni di risposta
+├── LivesIndicator.tsx    # Cuori / vite
+├── Prize.tsx             # Schermata vittoria
+├── GameOver.tsx          # Schermata sconfitta
+└── GameSkeleton.tsx      # Skeleton per Suspense fallback — RSC
+
+lib/
+├── types.ts              # Tipi condivisi
+├── deezer.ts             # Wrapper Deezer API (server-only)
+└── game-utils.ts         # Logica di gioco — funzioni pure
+
+__tests__/
+├── lib/game-utils.test.ts
+├── lib/deezer.test.ts
+└── components/ChoiceList.test.tsx
+
+e2e/
+└── game.spec.ts          # Flusso completo Playwright
+```
+
+## Concetti Next.js 15 + React 19 applicati
+
+### App Router + Server Components
+`app/page.tsx` e `app/game/page.tsx` sono RSC: zero JS nel bundle client.
+Il Client Component (`GameBoard`) è importato solo dove serve lo stato.
+
+### API Route Handler
+`app/api/track/route.ts` chiama Deezer server→server.
+In Next.js 15 il fetch non è cached di default: la chart usa esplicitamente
+`next: { revalidate: 3600 }`. La risposta al client ha `Cache-Control: no-store`.
+
+### Suspense + Streaming + React 19 use()
+`app/game/page.tsx` chiama `getFirstQuestion()` senza `await` e passa
+la Promise a `GameBoard`. React 19 `use()` sblocca la Promise dentro il
+Client Component, attivando il Suspense boundary durante il pending.
+Next.js fa streaming: il browser riceve subito lo skeleton, poi il componente
+viene sostituito. Niente doppio fetch, niente `useEffect + isLoading`.
+
+### useTransition
+Le domande successive usano `startTransition` per mantenere la UI
+interattiva (feedback della risposta visibile) mentre carica la prossima traccia.
