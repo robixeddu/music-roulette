@@ -71,25 +71,3 @@ __tests__/
 e2e/
 └── game.spec.ts          # Flusso completo Playwright
 ```
-
-## Concetti Next.js 15 + React 19 applicati
-
-### App Router + Server Components
-`app/page.tsx` e `app/game/page.tsx` sono RSC: zero JS nel bundle client.
-Il Client Component (`GameBoard`) è importato solo dove serve lo stato.
-
-### API Route Handler
-`app/api/track/route.ts` chiama Deezer server→server.
-In Next.js 15 il fetch non è cached di default: la chart usa esplicitamente
-`next: { revalidate: 3600 }`. La risposta al client ha `Cache-Control: no-store`.
-
-### Suspense + Streaming + React 19 use()
-`app/game/page.tsx` chiama `getFirstQuestion()` senza `await` e passa
-la Promise a `GameBoard`. React 19 `use()` sblocca la Promise dentro il
-Client Component, attivando il Suspense boundary durante il pending.
-Next.js fa streaming: il browser riceve subito lo skeleton, poi il componente
-viene sostituito. Niente doppio fetch, niente `useEffect + isLoading`.
-
-### useTransition
-Le domande successive usano `startTransition` per mantenere la UI
-interattiva (feedback della risposta visibile) mentre carica la prossima traccia.
