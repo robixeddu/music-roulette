@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { GameController } from '@/components/GameController'
 import { GameSkeleton } from '@/components/GameSkeleton'
 import { ThemeProvider } from '@/components/ThemeProvider'
-import { getThemeForGenre } from '@/lib/genres'
+import { getThemeForGenre, getGenreById, GENRES } from '@/lib/genres'
 import type { Metadata } from 'next'
 import type { TrackQuestion } from '@/lib/types'
 
@@ -11,36 +11,22 @@ export const metadata: Metadata = {
 }
 
 interface GamePageProps {
-  searchParams: Promise<{ genreId?: string; genreName?: string }>
+  searchParams: Promise<{ genreId?: string }>
 }
 
-async function getFirstQuestion(genreId: number): Promise<TrackQuestion> {
-  const { fetchChartTracks, pickQuestionTracks } = await import('@/lib/deezer')
-  const { buildQuestion } = await import('@/lib/game-utils')
-  const tracks = await fetchChartTracks(genreId)
+async function getFirstQuestion(genreId: string): Promise<TrackQuestion> {
+  const { fetchTracksByGenre, pickQuestionTracks, buildQuestion } = await import('@/lib/itunes')
+  const genre = getGenreById(genreId) ?? GENRES[0]
+  const tracks = await fetchTracksByGenre(genre.searchTerm)
   const { correct, fakes } = pickQuestionTracks(tracks, 3)
   return buildQuestion(correct, fakes)
 }
 
-/**
- * Game page — RSC shell.
- *
- * Legge genreId dai searchParams (Promise in Next.js 15),
- * calcola il tema server-side, passa la prima domanda come Promise
- * NON-awaited a GameController.
- *
- * Il Suspense qui gestisce solo il primo render (hydration).
- * I loading successivi sono gestiti dal Suspense interno a GameController,
- * così l'header con vite e punteggio non sparisce durante le transizioni.
- */
 export default async function GamePage({ searchParams }: GamePageProps) {
   const params = await searchParams
-  const genreId = Number(params.genreId ?? 0)
-  const genreName = params.genreName ?? 'Global'
-
+  const genreId = params.genreId ?? GENRES[0].id
+  const genre = getGenreById(genreId) ?? GENRES[0]
   const theme = getThemeForGenre(genreId)
-
-  // NON await: passiamo la Promise a GameController
   const firstQuestionPromise = getFirstQuestion(genreId)
 
   return (
@@ -51,11 +37,10 @@ export default async function GamePage({ searchParams }: GamePageProps) {
             ← Generi
           </a>
           <span className="game-nav__title" aria-hidden="true">
-            {genreName}
+            {genre.emoji} {genre.name}
           </span>
         </nav>
 
-        {/* Suspense esterno: solo per il primo render prima dell'hydration */}
         <Suspense fallback={<GameSkeleton />}>
           <GameController
             firstQuestionPromise={firstQuestionPromise}

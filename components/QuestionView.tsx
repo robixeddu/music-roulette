@@ -1,16 +1,15 @@
-"use client";
+'use client'
 
-import { use } from "react";
-import type { TrackQuestion, TrackOption } from "@/lib/types";
-import { AudioPlayer } from "./AudioPlayer";
-import { ChoiceList } from "./ChoiceList";
-import Image from "next/image";
-import { proxyAudioUrl } from "@/lib/audio";
+import { use } from 'react'
+import type { TrackQuestion, TrackOption } from '@/lib/types'
+import { AudioPlayer } from './AudioPlayer'
+import { ChoiceList } from './ChoiceList'
+import Image from 'next/image'
 
 interface QuestionViewProps {
-  questionPromise: Promise<TrackQuestion>;
-  selectedId: number | null;
-  onSelect: (option: TrackOption) => void;
+  questionPromise: Promise<TrackQuestion>
+  selectedId: number | null
+  onSelect: (option: TrackOption) => void
 }
 
 /**
@@ -25,19 +24,14 @@ interface QuestionViewProps {
  * cambia (nuova domanda), solo QuestionView viene ri-sospeso,
  * mentre GameController (vite, punteggio, header) rimane visibile.
  */
-export function QuestionView({
-  questionPromise,
-  selectedId,
-  onSelect,
-}: QuestionViewProps) {
-  const question = use(questionPromise);
+export function QuestionView({ questionPromise, selectedId, onSelect }: QuestionViewProps) {
+  const question = use(questionPromise)
 
-  const result =
-    selectedId === null
-      ? "idle"
-      : question.options.find((o) => o.id === selectedId)?.isCorrect
-        ? "correct"
-        : "wrong";
+  const result = selectedId === null
+    ? 'idle'
+    : question.options.find(o => o.id === selectedId)?.isCorrect
+      ? 'correct'
+      : 'wrong'
 
   return (
     <div className="question-view">
@@ -47,7 +41,7 @@ export function QuestionView({
           alt="Copertina album — prova a indovinare la canzone!"
           width={200}
           height={200}
-          className={`game-board__cover ${selectedId !== null ? "game-board__cover--revealed" : ""}`}
+          className={`game-board__cover ${selectedId !== null ? 'game-board__cover--revealed' : ''}`}
           priority
         />
         <div className="game-board__cover-overlay" aria-hidden="true" />
@@ -56,9 +50,9 @@ export function QuestionView({
       <AudioPlayer src={question.previewUrl} />
 
       <p className="sr-only">
-        Ascolta l&apos;estratto e scegli l&apos;artista e il titolo corretti tra
-        le opzioni.
+        Ascolta l&apos;estratto e scegli l&apos;artista e il titolo corretti tra le opzioni.
       </p>
+
       <ChoiceList
         options={question.options}
         selectedId={selectedId}
@@ -67,5 +61,5 @@ export function QuestionView({
         disabled={selectedId !== null}
       />
     </div>
-  );
+  )
 }

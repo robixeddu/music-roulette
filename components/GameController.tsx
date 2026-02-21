@@ -12,8 +12,8 @@ import { GameSkeleton } from './GameSkeleton'
 import { GameError } from './GameError'
 import { ErrorBoundary } from './ErrorBoundary'
 
-function fetchQuestion(genreId: number): Promise<TrackQuestion> {
-  const params = genreId ? `?genreId=${genreId}` : ''
+function fetchQuestion(genreId: string): Promise<TrackQuestion> {
+  const params = `?genreId=${genreId}`
   return fetch(`/api/track${params}`, { cache: 'no-store' })
     .then(res => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -23,7 +23,7 @@ function fetchQuestion(genreId: number): Promise<TrackQuestion> {
 
 interface GameControllerProps {
   firstQuestionPromise: Promise<TrackQuestion>
-  genreId: number
+  genreId: string
 }
 
 /**

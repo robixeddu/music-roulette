@@ -1,49 +1,34 @@
 // ─── Generi ──────────────────────────────────────────────────────────────────
 
-export interface DeezerGenre {
-  id: number
+export interface Genre {
+  id: string
   name: string
-  picture_medium: string
-}
-
-export interface DeezerGenreResponse {
-  data: DeezerGenre[]
+  emoji: string
+  searchTerm: string  // termine usato per la ricerca iTunes
 }
 
 export interface GenreTheme {
-  accent: string       // colore principale (CSS hex)
-  accentGlow: string   // versione semi-trasparente per glow/shadow
-  bg: string           // colore background base
-  bgSurface: string    // card/surface
+  accent: string
+  accentGlow: string
+  bg: string
+  bgSurface: string
 }
 
-// Il genere selezionato che viaggia tra pagine tramite searchParams
-export interface SelectedGenre {
-  id: number
-  name: string
+// ─── iTunes raw shapes (solo ciò che usiamo) ─────────────────────────────────
+
+export interface iTunesTrack {
+  trackId: number
+  trackName: string
+  artistName: string
+  collectionName: string
+  previewUrl: string        // URL diretto, no token, CORS ok
+  artworkUrl100: string     // cover 100x100
+  primaryGenreName: string
 }
 
-// ─── Deezer raw shapes (solo ciò che usiamo) ────────────────────────────────
-
-export interface DeezerArtist {
-  id: number
-  name: string
-}
-
-export interface DeezerTrack {
-  id: number
-  title: string
-  preview: string // URL 30s mp3
-  artist: DeezerArtist
-  album: {
-    id: number
-    title: string
-    cover_medium: string
-  }
-}
-
-export interface DeezerChartResponse {
-  data: DeezerTrack[]
+export interface iTunesSearchResponse {
+  resultCount: number
+  results: iTunesTrack[]
 }
 
 // ─── Shapes usate dal gioco ──────────────────────────────────────────────────
@@ -76,5 +61,5 @@ export const INITIAL_GAME_STATE: GameState = {
   status: 'playing',
 }
 
-export const WIN_SCORE = 5   // quante corrette per vincere
+export const WIN_SCORE = 5
 export const MAX_LIVES = 3

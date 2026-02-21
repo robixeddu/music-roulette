@@ -1,30 +1,23 @@
 'use client'
 
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import type { DeezerGenre } from '@/lib/types'
+import type { Genre } from '@/lib/types'
 import { GENRE_THEMES, DEFAULT_THEME } from '@/lib/genres'
 
 interface GenreGridProps {
-  genres: DeezerGenre[]
+  genres: Genre[]
 }
 
 /**
- * Griglia di selezione genere.
- * Client Component perché usa useRouter per navigare con il genreId.
- *
- * Accessibilità:
- * - role="list" + role="listitem" per la griglia semantica
- * - Ogni card è un <button> navigabile da tastiera
- * - aria-label descrive la card con nome genere
- * - Il colore accent è visibile anche in modalità alto contrasto
- *   grazie al bordo colorato (non solo il background)
+ * Griglia di selezione genere con temi visivi.
+ * Usa emoji invece di immagini — nessuna dipendenza da CDN esterni,
+ * nessun problema di CORS o domini da whitelistare.
  */
 export function GenreGrid({ genres }: GenreGridProps) {
   const router = useRouter()
 
-  const handleSelect = (genre: DeezerGenre) => {
-    router.push(`/game?genreId=${genre.id}&genreName=${encodeURIComponent(genre.name)}`)
+  const handleSelect = (genre: Genre) => {
+    router.push(`/game?genreId=${genre.id}`)
   }
 
   return (
@@ -43,17 +36,9 @@ export function GenreGrid({ genres }: GenreGridProps) {
                 '--genre-glow': theme.accentGlow,
               } as React.CSSProperties}
             >
-              <div className="genre-card__img-wrap">
-                <Image
-                  src={genre.picture_medium}
-                  alt=""
-                  aria-hidden="true"
-                  width={120}
-                  height={120}
-                  className="genre-card__img"
-                />
-                <div className="genre-card__overlay" aria-hidden="true" />
-              </div>
+              <span className="genre-card__emoji" aria-hidden="true">
+                {genre.emoji}
+              </span>
               <span className="genre-card__name">{genre.name}</span>
             </button>
           </li>

@@ -710,3 +710,23 @@ body {
   text-align: center;
   line-height: 1.7;
 }
+
+/* ─── AudioPlayer: stato disabilitato ──────────────────────────────────── */
+.audio-player__btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none !important;
+}
+
+/* ─── Genre Card: emoji layout (sostituisce immagine) ───────────────────── */
+.genre-card__emoji {
+  font-size: 2.5rem;
+  line-height: 1;
+  display: block;
+  transition: transform 0.3s var(--ease-out);
+}
+
+.genre-card:hover .genre-card__emoji {
+  transform: scale(1.2);
+}

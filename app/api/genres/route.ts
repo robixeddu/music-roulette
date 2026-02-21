@@ -1,29 +1,15 @@
 import { NextResponse } from 'next/server'
-import { fetchGenres } from '@/lib/deezer'
+import { GENRES } from '@/lib/genres'
 
 /**
  * GET /api/genres
- *
- * Restituisce la lista generi Deezer con id, nome e immagine.
- * Cached 24h lato Next.js (i generi cambiano raramente).
- * Usato come fallback client-side se necessario — la pagina /genres
- * fetcha direttamente server-side tramite RSC.
+ * Restituisce la lista statica dei generi supportati.
+ * Non fetcha nessuna API esterna — risposta immediata.
  */
 export async function GET() {
-  try {
-    const genres = await fetchGenres()
-
-    return NextResponse.json(genres, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=3600',
-      },
-    })
-  } catch (error) {
-    console.error('[/api/genres] Error:', error)
-
-    return NextResponse.json(
-      { error: 'Impossibile caricare i generi. Riprova.' },
-      { status: 500 }
-    )
-  }
+  return NextResponse.json(GENRES, {
+    headers: {
+      'Cache-Control': 'public, max-age=86400',
+    },
+  })
 }
