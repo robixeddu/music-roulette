@@ -1,42 +1,65 @@
 import type { iTunesTrack, iTunesSearchResponse, TrackOption, TrackQuestion } from './types'
 
-// Server-only: nessun 'use client', mai nel bundle browser.
-
 const ITUNES_BASE = 'https://itunes.apple.com'
 
 /**
- * Fetcha brani iTunes per un termine di ricerca legato al genere.
- * I previewUrl sono URL diretti su audio-ssl.itunes.apple.com —
- * nessun token HMAC, CORS aperto, funzionano direttamente nel browser.
- *
- * Cache 1h: i risultati per genere cambiano raramente.
+ * Fetcha le top song di un artista tramite lookup per ID.
+ * Più affidabile della ricerca testuale: risultati sempre coerenti,
+ * zero falsi positivi, preview quasi sempre presenti.
  */
-export async function fetchTracksByGenre(searchTerm: string): Promise<iTunesTrack[]> {
+async function fetchArtistTracks(artistId: number): Promise<iTunesTrack[]> {
   const params = new URLSearchParams({
-    term: searchTerm,
-    media: 'music',
+    id: String(artistId),
     entity: 'song',
-    limit: '100',
-    country: 'US',
+    limit: '10',
   })
 
-  const res = await fetch(`${ITUNES_BASE}/search?${params}`, {
+  const res = await fetch(`${ITUNES_BASE}/lookup?${params}`, {
     next: { revalidate: 3600 },
   })
 
-  if (!res.ok) {
-    throw new Error(`iTunes fetch failed: ${res.status} ${res.statusText}`)
-  }
+  if (!res.ok) return []
 
   const json: iTunesSearchResponse = await res.json()
 
-  // Filtra tracce senza preview (alcune non ce l'hanno)
   return json.results.filter(
-    (t) => t.previewUrl && t.previewUrl.length > 0
+    // Il primo risultato è l'artista stesso, non una track
+    (t): t is iTunesTrack =>
+      'trackId' in t &&
+      'previewUrl' in t &&
+      typeof t.previewUrl === 'string' &&
+      t.previewUrl.length > 0
   )
 }
 
-/** Fisher-Yates shuffle — funzione pura */
+/**
+ * Fetcha brani da un pool di artisti in parallelo e li mescola.
+ * Sceglie un sottoinsieme casuale di artisti per variare i risultati
+ * ad ogni partita pur mantenendo un pool ampio.
+ */
+export async function fetchTracksByArtistIds(
+  artistIds: number[],
+  sampleSize: number = 5
+): Promise<iTunesTrack[]> {
+  // Prende un sottoinsieme casuale di artisti per variare ad ogni partita
+  const sampled = shuffleArray(artistIds).slice(0, sampleSize)
+
+  const results = await Promise.allSettled(
+    sampled.map(id => fetchArtistTracks(id))
+  )
+
+  const tracks = results
+    .filter((r): r is PromiseFulfilledResult<iTunesTrack[]> => r.status === 'fulfilled')
+    .flatMap(r => r.value)
+
+  if (tracks.length < 4) {
+    throw new Error(`Not enough tracks for this genre (got ${tracks.length})`)
+  }
+
+  return tracks
+}
+
+/** Fisher-Yates shuffle */
 export function shuffleArray<T>(arr: T[]): T[] {
   const copy = [...arr]
   for (let i = copy.length - 1; i > 0; i--) {
@@ -46,7 +69,7 @@ export function shuffleArray<T>(arr: T[]): T[] {
   return copy
 }
 
-/** Sceglie una traccia casuale e costruisce le opzioni false */
+/** Sceglie una traccia corretta e `count` fake dallo stesso pool */
 export function pickQuestionTracks(
   tracks: iTunesTrack[],
   count: number = 3
@@ -63,26 +86,17 @@ export function pickQuestionTracks(
   return { correct, fakes }
 }
 
-/** Converte una iTunesTrack in TrackOption */
-export function trackToOption(track: iTunesTrack, isCorrect: boolean): TrackOption {
-  return {
-    id: track.trackId,
-    label: `${track.artistName} — ${track.trackName}`,
-    isCorrect,
-  }
-}
-
-/** Costruisce una TrackQuestion completa da mandare al client */
 export function buildQuestion(
   correct: iTunesTrack,
   fakes: iTunesTrack[]
 ): TrackQuestion {
-  // Cover: sostituisce 100x100 con 300x300 per qualità migliore
-  const albumCover = correct.artworkUrl100.replace('100x100', '300x300')
+  const albumCover = correct.artworkUrl100
+    .replace('100x100bb', '300x300bb')
+    .replace('100x100', '300x300')
 
   const options: TrackOption[] = shuffleArray([
-    trackToOption(correct, true),
-    ...fakes.map((f) => trackToOption(f, false)),
+    { id: correct.trackId, label: `${correct.artistName} — ${correct.trackName}`, isCorrect: true },
+    ...fakes.map(f => ({ id: f.trackId, label: `${f.artistName} — ${f.trackName}`, isCorrect: false })),
   ])
 
   return {

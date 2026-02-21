@@ -4,7 +4,7 @@ export interface Genre {
   id: string
   name: string
   emoji: string
-  searchTerm: string  // termine usato per la ricerca iTunes
+  artistIds: number[]
 }
 
 export interface GenreTheme {

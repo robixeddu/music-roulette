@@ -1,29 +1,28 @@
-'use client'
+"use client";
 
-import { useState, useCallback, Suspense } from 'react'
-import type { TrackQuestion, TrackOption, GameState } from '@/lib/types'
-import { INITIAL_GAME_STATE } from '@/lib/types'
-import { applyGuess, formatScore } from '@/lib/game-utils'
-import { QuestionView } from './QuestionView'
-import { LivesIndicator } from './LivesIndicator'
-import { Prize } from './Prize'
-import { GameOver } from './GameOver'
-import { GameSkeleton } from './GameSkeleton'
-import { GameError } from './GameError'
-import { ErrorBoundary } from './ErrorBoundary'
+import { useState, useCallback, Suspense } from "react";
+import type { TrackQuestion, TrackOption, GameState } from "@/lib/types";
+import { INITIAL_GAME_STATE } from "@/lib/types";
+import { applyGuess, formatScore } from "@/lib/game-utils";
+import { QuestionView } from "./QuestionView";
+import { LivesIndicator } from "./LivesIndicator";
+import { Prize } from "./Prize";
+import { GameOver } from "./GameOver";
+import { GameSkeleton } from "./GameSkeleton";
+import { GameError } from "./GameError";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 function fetchQuestion(genreId: string): Promise<TrackQuestion> {
-  const params = `?genreId=${genreId}`
-  return fetch(`/api/track${params}`, { cache: 'no-store' })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json()
-    })
+  const params = `?genreId=${genreId}`;
+  return fetch(`/api/track${params}`, { cache: "no-store" }).then((res) => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  });
 }
 
 interface GameControllerProps {
-  firstQuestionPromise: Promise<TrackQuestion>
-  genreId: string
+  firstQuestionPromise: Promise<TrackQuestion>;
+  genreId: string;
 }
 
 /**
@@ -41,44 +40,46 @@ interface GameControllerProps {
  * Quando questionPromise cambia, solo QuestionView viene ri-sospeso.
  * L'header (vite + punteggio) rimane visibile durante il caricamento.
  */
-export function GameController({ firstQuestionPromise, genreId }: GameControllerProps) {
-  const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE)
-  const [selectedId, setSelectedId] = useState<number | null>(null)
-  const [questionPromise, setQuestionPromise] = useState(firstQuestionPromise)
+export function GameController({
+  firstQuestionPromise,
+  genreId,
+}: GameControllerProps) {
+  const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [questionPromise, setQuestionPromise] = useState(firstQuestionPromise);
 
   const nextQuestion = useCallback(() => {
-    setSelectedId(null)
-    setQuestionPromise(fetchQuestion(genreId))
-  }, [genreId])
+    setSelectedId(null);
+    setQuestionPromise(fetchQuestion(genreId));
+  }, [genreId]);
 
   const restartGame = useCallback(() => {
-    setGameState(INITIAL_GAME_STATE)
-    setSelectedId(null)
-    setQuestionPromise(fetchQuestion(genreId))
-  }, [genreId])
+    setGameState(INITIAL_GAME_STATE);
+    setSelectedId(null);
+    setQuestionPromise(fetchQuestion(genreId));
+  }, [genreId]);
 
   const handleSelect = useCallback(
     (option: TrackOption) => {
-      if (selectedId !== null) return
-
-      setSelectedId(option.id)
-      const newState = applyGuess(gameState, option.isCorrect)
-      setGameState(newState)
-
-      // Aspetta che l'utente veda il feedback prima di caricare la prossima
-      if (newState.status === 'playing') {
-        setTimeout(nextQuestion, 1500)
-      }
+      if (selectedId !== null) return;
+      setSelectedId(option.id);
+      setGameState((prev) => {
+        const newState = applyGuess(prev, option.isCorrect);
+        if (newState.status === "playing") {
+          setTimeout(nextQuestion, 1500);
+        }
+        return newState;
+      });
     },
-    [selectedId, gameState, nextQuestion]
-  )
+    [selectedId, nextQuestion] // gameState rimosso dalle dipendenze
+  );
 
   // ── Fine partita ──────────────────────────────────────────────────────────
-  if (gameState.status === 'won') {
-    return <Prize score={gameState.score} onRestart={restartGame} />
+  if (gameState.status === "won") {
+    return <Prize score={gameState.score} onRestart={restartGame} />;
   }
-  if (gameState.status === 'lost') {
-    return <GameOver score={gameState.score} onRestart={restartGame} />
+  if (gameState.status === "lost") {
+    return <GameOver score={gameState.score} onRestart={restartGame} />;
   }
 
   // ── Gioco attivo ──────────────────────────────────────────────────────────
@@ -106,8 +107,8 @@ export function GameController({ firstQuestionPromise, genreId }: GameController
         fallback={({ reset }) => (
           <GameError
             onRetry={() => {
-              reset()
-              setQuestionPromise(fetchQuestion(genreId))
+              reset();
+              setQuestionPromise(fetchQuestion(genreId));
             }}
           />
         )}
@@ -125,5 +126,5 @@ export function GameController({ firstQuestionPromise, genreId }: GameController
         </Suspense>
       </ErrorBoundary>
     </div>
-  )
+  );
 }

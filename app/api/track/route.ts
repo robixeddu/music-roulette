@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchTracksByGenre, pickQuestionTracks, buildQuestion } from '@/lib/itunes'
+import { fetchTracksByArtistIds, pickQuestionTracks, buildQuestion } from '@/lib/itunes'
 import { getGenreById, GENRES } from '@/lib/genres'
 
 /**
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const genreId = request.nextUrl.searchParams.get('genreId') ?? 'pop'
     const genre = getGenreById(genreId) ?? GENRES[0]
 
-    const tracks = await fetchTracksByGenre(genre.searchTerm)
+    const tracks = await fetchTracksByArtistIds(genre.artistIds)
     const { correct, fakes } = pickQuestionTracks(tracks, 3)
     const question = buildQuestion(correct, fakes)
 
