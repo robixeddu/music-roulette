@@ -1,10 +1,11 @@
 import { NextRequest } from 'next/server'
 
-// Domini CDN Deezer legittimi per i preview audio
 const ALLOWED_HOSTS = [
   /^cdns-preview-[a-z0-9]+\.dzcdn\.net$/,
   /^cdn-preview-[a-z0-9]+\.deezer\.com$/,
   /^cdnt-preview\.dzcdn\.net$/,
+  /^[a-z0-9-]+\.dzcdn\.net$/,
+  /^[a-z0-9-]+\.deezer\.com$/,
 ]
 
 function isAllowedUrl(url: string): boolean {
@@ -17,18 +18,10 @@ function isAllowedUrl(url: string): boolean {
   }
 }
 
-/**
- * GET /api/audio?url=https://cdns-preview-x.dzcdn.net/...
- *
- * Proxy server-side per i preview audio Deezer.
- * Necessario perché i CDN Deezer non includono header CORS
- * compatibili con richieste da domini HTTPS di terze parti (ORB blocking).
- */
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get('url')
 
   if (!url || !isAllowedUrl(url)) {
-    // Log per debug: mostra quale URL sta fallendo
     console.warn('[/api/audio] Rejected URL:', url)
     return new Response('Invalid or disallowed URL', { status: 400 })
   }
@@ -36,13 +29,18 @@ export async function GET(request: NextRequest) {
   try {
     const upstream = await fetch(url, {
       headers: {
-        Referer: 'https://www.deezer.com/',
-        'User-Agent': 'Mozilla/5.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'audio/webm,audio/ogg,audio/wav,audio/*;q=0.9,*/*;q=0.5',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': 'https://www.deezer.com/',
+        'Origin': 'https://www.deezer.com',
       },
     })
 
+    console.log('[/api/audio] Upstream response:', upstream.status, url)
+
     if (!upstream.ok) {
-      return new Response('Audio not available', { status: 502 })
+      return new Response(`Upstream failed: ${upstream.status}`, { status: 502 })
     }
 
     return new Response(upstream.body, {
@@ -54,7 +52,8 @@ export async function GET(request: NextRequest) {
         'Access-Control-Allow-Origin': '*',
       },
     })
-  } catch {
+  } catch (err) {
+    console.error('[/api/audio] Fetch error:', err, url)
     return new Response('Upstream fetch failed', { status: 502 })
   }
 }
