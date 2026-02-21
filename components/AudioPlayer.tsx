@@ -4,53 +4,80 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 
 interface AudioPlayerProps {
   src: string
-  /** Chiamato quando l'audio inizia a suonare per la prima volta */
   onFirstPlay?: () => void
 }
 
+type LoadState = 'loading' | 'ready' | 'error'
+
 /**
- * Player audio accessibile:
- * - Keyboard: Space/Enter per play/pause
- * - aria-label dinamico che descrive lo stato
- * - Barra di progresso con role="progressbar"
- * - Focus visible per navigazione keyboard
+ * Player audio accessibile e robusto.
+ *
+ * Problemi risolti rispetto alla versione precedente:
+ * - audio.play() ritorna una Promise: va awaited e il rejection va catchato.
+ *   Ignorarla causa "Uncaught (in promise) NotSupportedError".
+ * - Il pulsante è disabilitato finché il browser non ha caricato
+ *   abbastanza dati per riprodurre (evento `canplay`).
+ * - Quando src cambia, l'elemento audio viene esplicitamente resettato
+ *   con load() prima di qualsiasi tentativo di play.
  */
 export function AudioPlayer({ src, onFirstPlay }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [loadState, setLoadState] = useState<LoadState>('loading')
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
   const hasPlayedRef = useRef(false)
 
-  // Reset quando cambia la sorgente (nuova domanda)
+  // Reset completo quando cambia src
   useEffect(() => {
-    setIsPlaying(false)
-    setProgress(0)
-    setDuration(0)
-    hasPlayedRef.current = false
-  }, [src])
-
-  const togglePlay = useCallback(() => {
     const audio = audioRef.current
     if (!audio) return
 
+    setIsPlaying(false)
+    setProgress(0)
+    setDuration(0)
+    setLoadState('loading')
+    hasPlayedRef.current = false
+
+    // Forza il browser a ricaricare il nuovo src
+    audio.load()
+  }, [src])
+
+  const togglePlay = useCallback(async () => {
+    const audio = audioRef.current
+    if (!audio || loadState !== 'ready') return
+
     if (isPlaying) {
       audio.pause()
-    } else {
-      audio.play()
+      return
+    }
+
+    try {
+      await audio.play()
       if (!hasPlayedRef.current) {
         hasPlayedRef.current = true
         onFirstPlay?.()
       }
+    } catch (err) {
+      // NotSupportedError, NotAllowedError (autoplay policy), ecc.
+      // Non crashiamo — mostriamo solo che non è possibile riprodurre
+      console.warn('[AudioPlayer] play() failed:', err)
+      setLoadState('error')
     }
-  }, [isPlaying, onFirstPlay])
+  }, [isPlaying, loadState, onFirstPlay])
 
-  // Keyboard: Space e Enter attivano play/pause
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault()
       togglePlay()
     }
+  }
+
+  // canplay: il browser ha abbastanza dati per iniziare la riproduzione
+  const handleCanPlay = () => {
+    setLoadState('ready')
+    const audio = audioRef.current
+    if (audio) setDuration(audio.duration)
   }
 
   const handleTimeUpdate = () => {
@@ -61,10 +88,15 @@ export function AudioPlayer({ src, onFirstPlay }: AudioPlayerProps) {
 
   const handleLoadedMetadata = () => {
     const audio = audioRef.current
-    if (audio) setDuration(audio.duration)
+    if (audio && audio.duration) setDuration(audio.duration)
   }
 
   const handleEnded = () => setIsPlaying(false)
+
+  const handleError = () => {
+    setLoadState('error')
+    setIsPlaying(false)
+  }
 
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return '0:00'
@@ -74,36 +106,46 @@ export function AudioPlayer({ src, onFirstPlay }: AudioPlayerProps) {
   }
 
   const currentTime = duration ? (progress / 100) * duration : 0
+  const isDisabled = loadState !== 'ready'
+
+  const btnLabel = loadState === 'loading'
+    ? 'Caricamento audio...'
+    : loadState === 'error'
+    ? 'Audio non disponibile'
+    : isPlaying
+    ? 'Metti in pausa'
+    : 'Riproduci estratto'
 
   return (
     <div className="audio-player">
-      {/* Audio element nativo - nascosto visivamente, presente nel DOM */}
       <audio
         ref={audioRef}
         src={src}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
+        onCanPlay={handleCanPlay}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
+        onError={handleError}
         preload="metadata"
       />
 
-      {/* Pulsante play/pause */}
       <button
-        className="audio-player__btn"
+        className={`audio-player__btn ${isDisabled ? 'audio-player__btn--disabled' : ''}`}
         onClick={togglePlay}
         onKeyDown={handleKeyDown}
-        aria-label={isPlaying ? 'Metti in pausa' : 'Riproduci estratto'}
+        aria-label={btnLabel}
         aria-pressed={isPlaying}
+        aria-busy={loadState === 'loading'}
+        disabled={isDisabled}
         type="button"
       >
         <span className="audio-player__icon" aria-hidden="true">
-          {isPlaying ? '⏸' : '▶'}
+          {loadState === 'loading' ? '⏳' : loadState === 'error' ? '✕' : isPlaying ? '⏸' : '▶'}
         </span>
       </button>
 
-      {/* Barra progresso */}
       <div className="audio-player__progress-wrap">
         <div
           className="audio-player__progress-bar"
@@ -119,7 +161,9 @@ export function AudioPlayer({ src, onFirstPlay }: AudioPlayerProps) {
           />
         </div>
         <span className="audio-player__time" aria-hidden="true">
-          {formatTime(currentTime)} / {formatTime(duration)}
+          {loadState === 'error'
+            ? 'Preview non disponibile'
+            : `${formatTime(currentTime)} / ${formatTime(duration)}`}
         </span>
       </div>
     </div>
