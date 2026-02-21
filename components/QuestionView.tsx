@@ -53,13 +53,12 @@ export function QuestionView({
         <div className="game-board__cover-overlay" aria-hidden="true" />
       </div>
 
-      <AudioPlayer src={proxyAudioUrl(question.previewUrl)} />
-      
+      <AudioPlayer src={question.previewUrl} />
+
       <p className="sr-only">
         Ascolta l&apos;estratto e scegli l&apos;artista e il titolo corretti tra
         le opzioni.
       </p>
-
       <ChoiceList
         options={question.options}
         selectedId={selectedId}
