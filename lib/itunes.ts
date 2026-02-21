@@ -3,60 +3,65 @@ import type { iTunesTrack, iTunesSearchResponse, TrackOption, TrackQuestion } fr
 const ITUNES_BASE = 'https://itunes.apple.com'
 
 /**
- * Fetcha le top song di un artista tramite lookup per ID.
- * Più affidabile della ricerca testuale: risultati sempre coerenti,
- * zero falsi positivi, preview quasi sempre presenti.
+ * Cerca brani per nome artista su iTunes.
+ * Ricerca per nome è più affidabile degli ID numerici
+ * che variano tra regioni e cambiano nel tempo.
  */
-async function fetchArtistTracks(artistId: number): Promise<iTunesTrack[]> {
+async function fetchByArtistName(artistName: string): Promise<iTunesTrack[]> {
   const params = new URLSearchParams({
-    id: String(artistId),
+    term: artistName,
+    media: 'music',
     entity: 'song',
+    attribute: 'artistTerm',
     limit: '10',
+    country: 'US',
   })
 
-  const res = await fetch(`${ITUNES_BASE}/lookup?${params}`, {
-    next: { revalidate: 3600 },
-  })
-
-  if (!res.ok) return []
-
-  const json: iTunesSearchResponse = await res.json()
-
-  return json.results.filter(
-    // Il primo risultato è l'artista stesso, non una track
-    (t): t is iTunesTrack =>
-      'trackId' in t &&
-      'previewUrl' in t &&
-      typeof t.previewUrl === 'string' &&
-      t.previewUrl.length > 0
-  )
+  try {
+    const res = await fetch(`${ITUNES_BASE}/search?${params}`, {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return []
+    const json: iTunesSearchResponse = await res.json()
+    return json.results.filter(
+      t => t.previewUrl && t.previewUrl.length > 0 && t.trackId
+    )
+  } catch {
+    return []
+  }
 }
 
 /**
- * Fetcha brani da un pool di artisti in parallelo e li mescola.
- * Sceglie un sottoinsieme casuale di artisti per variare i risultati
- * ad ogni partita pur mantenendo un pool ampio.
+ * Fetcha brani da un sottoinsieme casuale degli artisti del genere in parallelo.
+ * Aggrega e mescola i risultati per variare le domande ad ogni partita.
  */
-export async function fetchTracksByArtistIds(
-  artistIds: number[],
+export async function fetchTracksByGenre(
+  searchTerms: string[],
   sampleSize: number = 5
 ): Promise<iTunesTrack[]> {
-  // Prende un sottoinsieme casuale di artisti per variare ad ogni partita
-  const sampled = shuffleArray(artistIds).slice(0, sampleSize)
+  const sampled = shuffleArray(searchTerms).slice(0, sampleSize)
 
   const results = await Promise.allSettled(
-    sampled.map(id => fetchArtistTracks(id))
+    sampled.map(term => fetchByArtistName(term))
   )
 
   const tracks = results
     .filter((r): r is PromiseFulfilledResult<iTunesTrack[]> => r.status === 'fulfilled')
     .flatMap(r => r.value)
 
-  if (tracks.length < 4) {
-    throw new Error(`Not enough tracks for this genre (got ${tracks.length})`)
+  // Deduplicazione per trackId (lo stesso brano può apparire più volte)
+  const seen = new Set<number>()
+  const unique = tracks.filter(t => {
+    if (seen.has(t.trackId)) return false
+    seen.add(t.trackId)
+    return true
+  })
+
+  if (unique.length < 4) {
+    throw new Error(`Not enough tracks for this genre (got ${unique.length})`)
   }
 
-  return tracks
+  return unique
 }
 
 /** Fisher-Yates shuffle */
@@ -69,7 +74,6 @@ export function shuffleArray<T>(arr: T[]): T[] {
   return copy
 }
 
-/** Sceglie una traccia corretta e `count` fake dallo stesso pool */
 export function pickQuestionTracks(
   tracks: iTunesTrack[],
   count: number = 3
@@ -77,19 +81,14 @@ export function pickQuestionTracks(
   if (tracks.length < count + 1) {
     throw new Error('Not enough tracks to build a question')
   }
-
   const correctIndex = Math.floor(Math.random() * tracks.length)
   const correct = tracks[correctIndex]
   const pool = tracks.filter((_, i) => i !== correctIndex)
   const fakes = shuffleArray(pool).slice(0, count)
-
   return { correct, fakes }
 }
 
-export function buildQuestion(
-  correct: iTunesTrack,
-  fakes: iTunesTrack[]
-): TrackQuestion {
+export function buildQuestion(correct: iTunesTrack, fakes: iTunesTrack[]): TrackQuestion {
   const albumCover = correct.artworkUrl100
     .replace('100x100bb', '300x300bb')
     .replace('100x100', '300x300')
@@ -99,9 +98,5 @@ export function buildQuestion(
     ...fakes.map(f => ({ id: f.trackId, label: `${f.artistName} — ${f.trackName}`, isCorrect: false })),
   ])
 
-  return {
-    previewUrl: correct.previewUrl,
-    albumCover,
-    options,
-  }
+  return { previewUrl: correct.previewUrl, albumCover, options }
 }

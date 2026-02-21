@@ -4,7 +4,7 @@ export interface Genre {
   id: string
   name: string
   emoji: string
-  artistIds: number[]
+  searchTerms: string[]   // termini di ricerca per artista su iTunes
 }
 
 export interface GenreTheme {
@@ -14,15 +14,15 @@ export interface GenreTheme {
   bgSurface: string
 }
 
-// ─── iTunes raw shapes (solo ciò che usiamo) ─────────────────────────────────
+// ─── iTunes raw shapes ────────────────────────────────────────────────────────
 
 export interface iTunesTrack {
   trackId: number
   trackName: string
   artistName: string
   collectionName: string
-  previewUrl: string        // URL diretto, no token, CORS ok
-  artworkUrl100: string     // cover 100x100
+  previewUrl: string
+  artworkUrl100: string
   primaryGenreName: string
 }
 
@@ -35,7 +35,7 @@ export interface iTunesSearchResponse {
 
 export interface TrackOption {
   id: number
-  label: string       // "Artist — Title"
+  label: string
   isCorrect: boolean
 }
 
