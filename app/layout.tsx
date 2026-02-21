@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it">
-      <body>
+      <body suppressHydrationWarning>
         {/* skip-link per accessibilità keyboard: permette di saltare la nav */}
         <a href="#main-content" className="skip-link">
           Vai al contenuto principale
