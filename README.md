@@ -1,7 +1,7 @@
 # Music Roulette 🎵
 
 Music quiz game costruito con Next.js 15 App Router + React 19.  
-Ascolta il preview di 30 secondi e indovina artista + titolo prima di perdere le 3 vite.
+Ascolta il preview di 30 secondi e indovina artista + titolo prima di perdere le 3 vite.  
 https://music-roulette-seven.vercel.app/
 
 ## Stack
