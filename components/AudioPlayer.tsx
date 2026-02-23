@@ -9,17 +9,6 @@ interface AudioPlayerProps {
 
 type LoadState = 'loading' | 'ready' | 'error'
 
-/**
- * Player audio accessibile e robusto.
- *
- * Problemi risolti rispetto alla versione precedente:
- * - audio.play() ritorna una Promise: va awaited e il rejection va catchato.
- *   Ignorarla causa "Uncaught (in promise) NotSupportedError".
- * - Il pulsante è disabilitato finché il browser non ha caricato
- *   abbastanza dati per riprodurre (evento `canplay`).
- * - Quando src cambia, l'elemento audio viene esplicitamente resettato
- *   con load() prima di qualsiasi tentativo di play.
- */
 export function AudioPlayer({ src, onFirstPlay }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -59,8 +48,6 @@ export function AudioPlayer({ src, onFirstPlay }: AudioPlayerProps) {
         onFirstPlay?.()
       }
     } catch (err) {
-      // NotSupportedError, NotAllowedError (autoplay policy), ecc.
-      // Non crashiamo — mostriamo solo che non è possibile riprodurre
       console.warn('[AudioPlayer] play() failed:', err)
       setLoadState('error')
     }
@@ -73,7 +60,6 @@ export function AudioPlayer({ src, onFirstPlay }: AudioPlayerProps) {
     }
   }
 
-  // canplay: il browser ha abbastanza dati per iniziare la riproduzione
   const handleCanPlay = () => {
     setLoadState('ready')
     const audio = audioRef.current
