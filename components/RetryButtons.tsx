@@ -11,7 +11,7 @@ export function RetryButtons({ gameName, onRestart, onArtistSelect }: RetryButto
     <>
       <button
         type="button"
-        className="btn btn--primary"
+        className="btn btn--primary btn--large"
         onClick={onRestart}
         autoFocus
       >
