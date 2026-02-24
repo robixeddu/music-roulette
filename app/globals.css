@@ -541,6 +541,64 @@ body {
   .audio-player__btn { width: 36px; height: 36px; }
 }
 
+
+/* ─── Homepage compatta su schermi piccoli (es. iPhone 12 mini) ─────────── */
+/*
+  Target: viewport height ≤ 740px (12 mini ha ~720px utili con Safari UI).
+  Obiettivo: tutto il contenuto della homepage visibile senza scroll.
+  Strategia: ridurre spaziature e dimensioni tipografiche, non rimuovere contenuto.
+*/
+@media (max-height: 740px) and (max-width: 480px) {
+  .home {
+    align-items: flex-start;
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+
+  .home__title-emoji {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .home__title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .home__tagline {
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+  }
+
+  /* Regole in griglia 2 colonne per risparmiare altezza */
+  .home__rules {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .home__rules li {
+    font-size: 0.75rem;
+    padding-left: 1rem;
+    line-height: 1.3;
+  }
+
+  .home__ctas {
+    gap: 0.75rem;
+  }
+
+  .btn--large {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+  }
+
+  .home__divider {
+    font-size: 0.7rem;
+  }
+}
+
 /* ─── Reduced Motion ────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
