@@ -1,24 +1,28 @@
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from '@vercel/speed-insights/next';
-import type { Metadata } from 'next'
-import './globals.css'
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'Music Roulette',
-  description: 'Indovina la canzone prima di perdere tutte le vite.',
+  title: "Music Roulette",
+  description: "Indovina la canzone prima di perdere tutte le vite.",
   openGraph: {
-    title: 'Music Roulette',
-    description: 'Indovina la canzone prima di perdere tutte le vite.',
-    type: 'website',
+    title: "Music Roulette",
+    description: "Indovina la canzone prima di perdere tutte le vite.",
+    type: "website",
   },
-}
+};
 
 /**
  * Root Layout — RSC puro.
  * Nessun 'use client': zero JS extra nel bundle per questo componente.
  * Definisce la struttura HTML base e i meta tag.
  */
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="it">
       <body suppressHydrationWarning>
@@ -29,9 +33,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main-content" tabIndex={-1}>
           {children}
         </main>
-        <SpeedInsights/>
+        <SpeedInsights />
         <Analytics />
       </body>
     </html>
-  )
+  );
 }

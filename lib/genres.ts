@@ -1,11 +1,11 @@
 import type { Genre, GenreTheme } from './types'
 
 /**
- * Ogni genere ha un array di termini di ricerca iTunes specifici per artista.
- * Usiamo ricerca per nome artista + "songs" invece di ID numerici
- * (gli ID cambiano tra regioni e nel tempo).
+ * Lista statica dei generi supportati.
  *
- * fetchTracksByGenre prova i termini in parallelo e aggrega i risultati.
+ * searchTerms: nomi di artisti rappresentativi usati da iTunes per
+ * costruire il pool di brani. Scelti per avere preview disponibili
+ * e per essere immediatamente riconoscibili dal pubblico.
  */
 export const GENRES: Genre[] = [
   {
@@ -100,6 +100,8 @@ export const GENRES: Genre[] = [
   },
 ]
 
+// ─── Temi visivi ──────────────────────────────────────────────────────────────
+
 export const GENRE_THEMES: Record<string, GenreTheme> = {
   pop:        { accent: '#ff6eb4', accentGlow: '#ff6eb440', bg: '#130008', bgSurface: '#1e000f' },
   rock:       { accent: '#ff4500', accentGlow: '#ff450040', bg: '#130200', bgSurface: '#1e0500' },
@@ -124,6 +126,8 @@ export const DEFAULT_THEME: GenreTheme = {
   bg: '#0a0a0f',
   bgSurface: '#13131e',
 }
+
+// ─── Helper ───────────────────────────────────────────────────────────────────
 
 export function getGenreById(id: string): Genre | undefined {
   return GENRES.find(g => g.id === id)

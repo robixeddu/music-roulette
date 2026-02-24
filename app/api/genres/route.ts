@@ -3,8 +3,8 @@ import { GENRES } from '@/lib/genres'
 
 /**
  * GET /api/genres
- * Restituisce la lista statica dei generi supportati.
- * Non fetcha nessuna API esterna — risposta immediata.
+ * Lista statica dei generi — risposta immediata, nessuna API esterna.
+ * Cache aggressiva: i generi cambiano raramente.
  */
 export async function GET() {
   return NextResponse.json(GENRES, {

@@ -7,9 +7,8 @@ export const metadata: Metadata = {
 }
 
 /**
- * Pagina selezione genere — RSC puro.
- * I generi sono statici (nessuna fetch), quindi niente Suspense necessario.
- * Zero JS per questa pagina, rendering immediato.
+ * Pagina selezione genere — RSC puro, zero JS client.
+ * Generi statici → nessuna fetch, nessun Suspense necessario.
  */
 export default function GenresPage() {
   return (
@@ -27,7 +26,7 @@ export default function GenresPage() {
         <header className="genres-page__header">
           <h1 className="genres-page__title">Scegli il genere</h1>
           <p className="genres-page__subtitle">
-            Le domande saranno pescate dalla libreria iTunes del genere scelto
+            Ascolta l&apos;estratto e indovina artista e titolo
           </p>
         </header>
 

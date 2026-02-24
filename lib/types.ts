@@ -4,7 +4,7 @@ export interface Genre {
   id: string
   name: string
   emoji: string
-  searchTerms: string[]   // termini di ricerca per artista su iTunes
+  searchTerms: string[]
 }
 
 export interface GenreTheme {
@@ -14,7 +14,7 @@ export interface GenreTheme {
   bgSurface: string
 }
 
-// ─── iTunes raw shapes ────────────────────────────────────────────────────────
+// ─── iTunes ──────────────────────────────────────────────────────────────────
 
 export interface iTunesTrack {
   trackId: number
@@ -31,7 +31,7 @@ export interface iTunesSearchResponse {
   results: iTunesTrack[]
 }
 
-// ─── Shapes usate dal gioco ──────────────────────────────────────────────────
+// ─── Game domain ─────────────────────────────────────────────────────────────
 
 export interface TrackOption {
   id: number
@@ -45,8 +45,6 @@ export interface TrackQuestion {
   options: TrackOption[]
 }
 
-// ─── Game state ──────────────────────────────────────────────────────────────
-
 export type GuessResult = 'idle' | 'correct' | 'wrong'
 
 export interface GameState {
@@ -55,11 +53,13 @@ export interface GameState {
   status: 'playing' | 'won' | 'lost'
 }
 
-export const INITIAL_GAME_STATE: GameState = {
-  lives: 3,
-  score: 0,
-  status: 'playing',
-}
+// ─── Costanti ─────────────────────────────────────────────────────────────────
 
 export const WIN_SCORE = 5
 export const MAX_LIVES = 3
+
+export const INITIAL_GAME_STATE: GameState = {
+  lives: MAX_LIVES,
+  score: 0,
+  status: 'playing',
+}

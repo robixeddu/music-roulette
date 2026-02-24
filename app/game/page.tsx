@@ -12,6 +12,10 @@ interface GamePageProps {
   searchParams: Promise<{ genreId?: string }>
 }
 
+/**
+ * Fetcha la prima domanda server-side così arriva già pronta con l'HTML,
+ * senza mostrare lo skeleton al primo render.
+ */
 async function getFirstQuestion(genreId: string): Promise<TrackQuestion> {
   const { fetchTracksByGenre, pickQuestionTracks, buildQuestion } = await import('@/lib/itunes')
   const genre = getGenreById(genreId) ?? GENRES[0]

@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { fetchTracksByGenre, pickQuestionTracks, buildQuestion } from '@/lib/itunes'
 import { getGenreById, GENRES } from '@/lib/genres'
 
+/**
+ * GET /api/track?genreId=rock
+ * Costruisce una domanda casuale per il genere richiesto.
+ * no-store: ogni domanda deve essere diversa.
+ */
 export async function GET(request: NextRequest) {
   try {
-    const genreId = request.nextUrl.searchParams.get('genreId') ?? 'pop'
+    const genreId = request.nextUrl.searchParams.get('genreId') ?? GENRES[0].id
     const genre = getGenreById(genreId) ?? GENRES[0]
 
     const tracks = await fetchTracksByGenre(genre.searchTerms)
@@ -15,7 +20,7 @@ export async function GET(request: NextRequest) {
       headers: { 'Cache-Control': 'no-store' },
     })
   } catch (error) {
-    console.error('[/api/track] Error:', error)
+    console.error('[/api/track]', error)
     return NextResponse.json(
       { error: 'Impossibile caricare la traccia. Riprova.' },
       { status: 500 }

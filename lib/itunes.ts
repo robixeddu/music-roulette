@@ -1,12 +1,19 @@
+/**
+ * Wrapper iTunes Search API — server only.
+ *
+ * Responsabilità:
+ * - fetchByArtistName: singola chiamata iTunes per nome artista
+ * - fetchTracksByGenre: campiona N artisti in parallelo e aggrega i brani
+ * - pickQuestionTracks: sceglie 1 corretta + N fake dal pool
+ * - buildQuestion: costruisce il TrackQuestion finale
+ */
 import type { iTunesTrack, iTunesSearchResponse, TrackOption, TrackQuestion } from './types'
+import { shuffleArray } from './utils'
 
 const ITUNES_BASE = 'https://itunes.apple.com'
 
-/**
- * Cerca brani per nome artista su iTunes.
- * Ricerca per nome è più affidabile degli ID numerici
- * che variano tra regioni e cambiano nel tempo.
- */
+// ─── Fetch ────────────────────────────────────────────────────────────────────
+
 async function fetchByArtistName(artistName: string): Promise<iTunesTrack[]> {
   const params = new URLSearchParams({
     term: artistName,
@@ -23,21 +30,19 @@ async function fetchByArtistName(artistName: string): Promise<iTunesTrack[]> {
     })
     if (!res.ok) return []
     const json: iTunesSearchResponse = await res.json()
-    return json.results.filter(
-      t => t.previewUrl && t.previewUrl.length > 0 && t.trackId
-    )
+    return json.results.filter(t => t.previewUrl && t.previewUrl.length > 0 && t.trackId)
   } catch {
     return []
   }
 }
 
 /**
- * Fetcha brani da un sottoinsieme casuale degli artisti del genere in parallelo.
- * Aggrega e mescola i risultati per variare le domande ad ogni partita.
+ * Campiona `sampleSize` artisti casuali da searchTerms,
+ * li fetcha in parallelo su iTunes e aggrega i brani deduplicati.
  */
 export async function fetchTracksByGenre(
   searchTerms: string[],
-  sampleSize: number = 5
+  sampleSize = 5
 ): Promise<iTunesTrack[]> {
   const sampled = shuffleArray(searchTerms).slice(0, sampleSize)
 
@@ -49,7 +54,6 @@ export async function fetchTracksByGenre(
     .filter((r): r is PromiseFulfilledResult<iTunesTrack[]> => r.status === 'fulfilled')
     .flatMap(r => r.value)
 
-  // Deduplicazione per trackId (lo stesso brano può apparire più volte)
   const seen = new Set<number>()
   const unique = tracks.filter(t => {
     if (seen.has(t.trackId)) return false
@@ -58,33 +62,24 @@ export async function fetchTracksByGenre(
   })
 
   if (unique.length < 4) {
-    throw new Error(`Not enough tracks for this genre (got ${unique.length})`)
+    throw new Error(`Brani insufficienti per questo genere (trovati: ${unique.length})`)
   }
 
   return unique
 }
 
-/** Fisher-Yates shuffle */
-export function shuffleArray<T>(arr: T[]): T[] {
-  const copy = [...arr]
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[copy[i], copy[j]] = [copy[j], copy[i]]
-  }
-  return copy
-}
+// ─── Question building ────────────────────────────────────────────────────────
 
 export function pickQuestionTracks(
   tracks: iTunesTrack[],
-  count: number = 3
+  fakeCount = 3
 ): { correct: iTunesTrack; fakes: iTunesTrack[] } {
-  if (tracks.length < count + 1) {
-    throw new Error('Not enough tracks to build a question')
+  if (tracks.length < fakeCount + 1) {
+    throw new Error('Pool di brani troppo piccolo per costruire una domanda')
   }
   const correctIndex = Math.floor(Math.random() * tracks.length)
   const correct = tracks[correctIndex]
-  const pool = tracks.filter((_, i) => i !== correctIndex)
-  const fakes = shuffleArray(pool).slice(0, count)
+  const fakes = shuffleArray(tracks.filter((_, i) => i !== correctIndex)).slice(0, fakeCount)
   return { correct, fakes }
 }
 

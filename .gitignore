@@ -1,8 +1,20 @@
+# Dependencies
 node_modules/
+
+# Next.js
 .next/
 out/
+
+# Environment
 .env.local
-*.tsbuildinfo
+.env*.local
+
+# Vercel
+.vercel
+
+# Testing
 playwright-report/
 test-results/
+
+# OS
 .DS_Store

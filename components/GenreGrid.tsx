@@ -8,28 +8,19 @@ interface GenreGridProps {
   genres: Genre[]
 }
 
-/**
- * Griglia di selezione genere con temi visivi.
- * Usa emoji invece di immagini — nessuna dipendenza da CDN esterni,
- * nessun problema di CORS o domini da whitelistare.
- */
 export function GenreGrid({ genres }: GenreGridProps) {
   const router = useRouter()
 
-  const handleSelect = (genre: Genre) => {
-    router.push(`/game?genreId=${genre.id}`)
-  }
-
   return (
     <ul className="genre-grid" role="list" aria-label="Seleziona un genere musicale">
-      {genres.map((genre) => {
+      {genres.map(genre => {
         const theme = GENRE_THEMES[genre.id] ?? DEFAULT_THEME
         return (
           <li key={genre.id} role="listitem">
             <button
               type="button"
               className="genre-card"
-              onClick={() => handleSelect(genre)}
+              onClick={() => router.push(`/game?genreId=${genre.id}`)}
               aria-label={`Gioca con ${genre.name}`}
               style={{
                 '--genre-accent': theme.accent,
