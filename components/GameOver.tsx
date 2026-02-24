@@ -1,11 +1,15 @@
 'use client'
 
+import { RetryButtons } from './RetryButtons'
+
 interface GameOverProps {
   score: number
+  gameName: string
   onRestart: () => void
+  onArtistSelect: (artistName: string) => void
 }
 
-export function GameOver({ score, onRestart }: GameOverProps) {
+export function GameOver({ score, gameName, onRestart, onArtistSelect }: GameOverProps) {
   return (
     <div
       className="game-over"
@@ -19,14 +23,11 @@ export function GameOver({ score, onRestart }: GameOverProps) {
         Hai totalizzato <strong>{score}</strong>{' '}
         {score === 1 ? 'punto' : 'punti'}. Riprova!
       </p>
-      <button
-        type="button"
-        className="btn btn--primary"
-        onClick={onRestart}
-        autoFocus
-      >
-        Riprova
-      </button>
+      <RetryButtons
+        gameName={gameName}
+        onRestart={onRestart}
+        onArtistSelect={onArtistSelect}
+      />
     </div>
   )
 }

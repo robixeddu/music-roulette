@@ -16,6 +16,12 @@ export interface GenreTheme {
 
 // ─── iTunes ──────────────────────────────────────────────────────────────────
 
+export interface ArtistResult {
+  artistId: number
+  artistName: string
+  primaryGenreName: string
+}
+
 export interface iTunesTrack {
   trackId: number
   trackName: string

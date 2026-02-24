@@ -1,18 +1,18 @@
 /**
  * Wrapper iTunes Search API — server only.
  *
- * Responsabilità:
- * - fetchByArtistName: singola chiamata iTunes per nome artista
- * - fetchTracksByGenre: campiona N artisti in parallelo e aggrega i brani
- * - pickQuestionTracks: sceglie 1 corretta + N fake dal pool
- * - buildQuestion: costruisce il TrackQuestion finale
+ * Modalità genere:  fetchTracksByGenre(searchTerms[])
+ * Modalità artista: fetchTracksByArtist(artistName)
+ *
+ * buildQuestion      → label "Artista — Titolo" (genere)
+ * buildArtistQuestion → label solo "Titolo" (artista già noto)
  */
-import type { iTunesTrack, iTunesSearchResponse, TrackOption, TrackQuestion } from './types'
+import type { iTunesTrack, iTunesSearchResponse, ArtistResult, TrackOption, TrackQuestion } from './types'
 import { shuffleArray } from './utils'
 
 const ITUNES_BASE = 'https://itunes.apple.com'
 
-// ─── Fetch ────────────────────────────────────────────────────────────────────
+// ─── Fetch helpers ────────────────────────────────────────────────────────────
 
 async function fetchByArtistName(artistName: string): Promise<iTunesTrack[]> {
   const params = new URLSearchParams({
@@ -23,7 +23,6 @@ async function fetchByArtistName(artistName: string): Promise<iTunesTrack[]> {
     limit: '10',
     country: 'US',
   })
-
   try {
     const res = await fetch(`${ITUNES_BASE}/search?${params}`, {
       next: { revalidate: 3600 },
@@ -35,6 +34,8 @@ async function fetchByArtistName(artistName: string): Promise<iTunesTrack[]> {
     return []
   }
 }
+
+// ─── Modalità genere ──────────────────────────────────────────────────────────
 
 /**
  * Campiona `sampleSize` artisti casuali da searchTerms,
@@ -64,8 +65,68 @@ export async function fetchTracksByGenre(
   if (unique.length < 4) {
     throw new Error(`Brani insufficienti per questo genere (trovati: ${unique.length})`)
   }
-
   return unique
+}
+
+// ─── Modalità artista ─────────────────────────────────────────────────────────
+
+/**
+ * Cerca artisti su iTunes per autocompletamento.
+ */
+export async function searchArtists(query: string, limit = 6): Promise<ArtistResult[]> {
+  if (!query.trim()) return []
+  const params = new URLSearchParams({
+    term: query,
+    media: 'music',
+    entity: 'musicArtist',
+    attribute: 'artistTerm',
+    limit: String(limit),
+    country: 'US',
+  })
+  try {
+    const res = await fetch(`${ITUNES_BASE}/search?${params}`, {
+      next: { revalidate: 300 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return (json.results ?? []).map((r: { artistId: number; artistName: string; primaryGenreName?: string }) => ({
+      artistId: r.artistId,
+      artistName: r.artistName,
+      primaryGenreName: r.primaryGenreName ?? '',
+    }))
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Fetcha fino a 50 brani di un artista specifico.
+ * Filtra per corrispondenza artista per evitare brani estranei.
+ */
+export async function fetchTracksByArtist(artistName: string): Promise<iTunesTrack[]> {
+  const params = new URLSearchParams({
+    term: artistName,
+    media: 'music',
+    entity: 'song',
+    attribute: 'artistTerm',
+    limit: '50',
+    country: 'US',
+  })
+  try {
+    const res = await fetch(`${ITUNES_BASE}/search?${params}`, {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return []
+    const json: iTunesSearchResponse = await res.json()
+    const artistLower = artistName.toLowerCase().replace(/[^a-z0-9]/g, '')
+    return json.results.filter(t => {
+      if (!t.previewUrl || !t.trackId) return false
+      const resultArtist = t.artistName.toLowerCase().replace(/[^a-z0-9]/g, '')
+      return resultArtist.includes(artistLower) || artistLower.includes(resultArtist)
+    })
+  } catch {
+    return []
+  }
 }
 
 // ─── Question building ────────────────────────────────────────────────────────
@@ -83,6 +144,7 @@ export function pickQuestionTracks(
   return { correct, fakes }
 }
 
+/** Modalità genere: label "Artista — Titolo" */
 export function buildQuestion(correct: iTunesTrack, fakes: iTunesTrack[]): TrackQuestion {
   const albumCover = correct.artworkUrl100
     .replace('100x100bb', '300x300bb')
@@ -91,6 +153,24 @@ export function buildQuestion(correct: iTunesTrack, fakes: iTunesTrack[]): Track
   const options: TrackOption[] = shuffleArray([
     { id: correct.trackId, label: `${correct.artistName} — ${correct.trackName}`, isCorrect: true },
     ...fakes.map(f => ({ id: f.trackId, label: `${f.artistName} — ${f.trackName}`, isCorrect: false })),
+  ])
+
+  return { previewUrl: correct.previewUrl, albumCover, options }
+}
+
+/**
+ * Modalità artista: label solo "Titolo".
+ * L'artista è già noto → mostrarlo sarebbe banale.
+ * Tutte le fake sono brani dello stesso artista → quiz più difficile.
+ */
+export function buildArtistQuestion(correct: iTunesTrack, fakes: iTunesTrack[]): TrackQuestion {
+  const albumCover = correct.artworkUrl100
+    .replace('100x100bb', '300x300bb')
+    .replace('100x100', '300x300')
+
+  const options: TrackOption[] = shuffleArray([
+    { id: correct.trackId, label: correct.trackName, isCorrect: true },
+    ...fakes.map(f => ({ id: f.trackId, label: f.trackName, isCorrect: false })),
   ])
 
   return { previewUrl: correct.previewUrl, albumCover, options }
