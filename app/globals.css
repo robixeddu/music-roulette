@@ -542,7 +542,6 @@ body {
 }
 
 /* ─── Reduced Motion ────────────────────────────────────────────────────── */
-@prefers-reduced-motion: reduce;
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -768,9 +767,8 @@ body {
   border-radius: var(--radius);
   color: var(--text-primary);
   font-family: var(--font-mono);
-  font-size: 0.875rem;
+  font-size: 16px; /* ≥16px previene zoom automatico su iOS */
   transition: border-color 0.15s;
-  /* reset stili browser per type=search */
   -webkit-appearance: none;
   appearance: none;
 }
@@ -807,7 +805,9 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   list-style: none;
-  overflow: hidden;
+  max-height: 280px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   z-index: 100;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
@@ -816,7 +816,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
   cursor: pointer;
   transition: background 0.1s;
   gap: 0.75rem;
