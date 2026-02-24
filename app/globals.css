@@ -201,15 +201,16 @@ body {
   flex-direction: column;
 }
 
-.game-nav {
+.app-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
+  padding: 0 1.1rem;
   border-bottom: 1px solid var(--border);
+  min-height: 3.6rem;
 }
 
-.game-nav__back {
+.app-nav__back {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--text-secondary);
@@ -217,9 +218,9 @@ body {
   letter-spacing: 0.05em;
   transition: color 0.15s;
 }
-.game-nav__back:hover { color: var(--text-primary); }
+.app-nav__back:hover { color: var(--text-primary); }
 
-.game-nav__title {
+.app-nav__title {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.9rem;
@@ -576,7 +577,7 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
     padding: 0.875rem 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
   }
 
   .home__rules li {
@@ -856,6 +857,7 @@ body {
 
 .artist-search__dropdown {
   position: absolute;
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
   background: var(--bg-elevated);
