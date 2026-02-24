@@ -798,18 +798,140 @@ body {
 
 .artist-search__dropdown {
   position: absolute;
-  top: calc(100% + 4px);
   left: 0;
   right: 0;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+/* Apre sotto l'input */
+.artist-search__dropdown--down {
+  top: calc(100% + 4px);
+  animation: slideDown 0.15s var(--ease-out);
+}
+
+/* Apre sopra l'input (flip) */
+.artist-search__dropdown--up {
+  bottom: calc(100% + 4px);
+  animation: slideUp 0.15s var(--ease-out);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Lista condivisa (desktop dropdown + mobile sheet) */
+.artist-search__list {
   list-style: none;
   max-height: 280px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  z-index: 100;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* ─── Mobile: bottom sheet ─────────────────────────────────────────────── */
+
+.artist-search__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 200;
+  animation: fadeOverlay 0.2s ease;
+}
+
+@keyframes fadeOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.artist-search__sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  z-index: 201;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  animation: sheetUp 0.28s var(--ease-out);
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.artist-search__sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 10px auto 4px;
+  flex-shrink: 0;
+}
+
+.artist-search__sheet-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem 0.75rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.artist-search__sheet-input {
+  flex: 1;
+  padding-right: 1rem !important;
+}
+
+.artist-search__sheet-close {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.artist-search__sheet-close:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.artist-search__sheet .artist-search__list {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: none;
+}
+
+.artist-search__sheet-empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.85rem;
 }
 
 .artist-search__option {

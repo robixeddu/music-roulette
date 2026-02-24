@@ -5,32 +5,71 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 interface AudioPlayerProps {
   src: string
   onFirstPlay?: () => void
+  /** Secondi finali in cui il volume scende a 0. Default: 4 */
+  fadeOutSeconds?: number
 }
 
 type LoadState = 'loading' | 'ready' | 'error'
 
-export function AudioPlayer({ src, onFirstPlay }: AudioPlayerProps) {
+export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
   const hasPlayedRef = useRef(false)
+  const rafRef = useRef<number | null>(null)
 
   // Reset completo quando cambia src
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
 
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = null
+    }
+
     setIsPlaying(false)
     setProgress(0)
     setDuration(0)
     setLoadState('loading')
     hasPlayedRef.current = false
-
-    // Forza il browser a ricaricare il nuovo src
+    audio.volume = 1
     audio.load()
   }, [src])
+
+  // Cleanup RAF su unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
+
+  // RAF loop: gestisce SOLO il volume fadeout, non tocca lo stato React
+  const startFadeLoop = useCallback(() => {
+    const loop = () => {
+      const audio = audioRef.current
+      if (!audio || audio.paused) return
+
+      const remaining = audio.duration - audio.currentTime
+      if (remaining <= fadeOutSeconds && remaining > 0) {
+        audio.volume = Math.max(0, remaining / fadeOutSeconds)
+      } else if (remaining > fadeOutSeconds && audio.volume < 1) {
+        audio.volume = 1
+      }
+
+      rafRef.current = requestAnimationFrame(loop)
+    }
+    rafRef.current = requestAnimationFrame(loop)
+  }, [fadeOutSeconds])
+
+  const stopFadeLoop = useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = null
+    }
+  }, [])
 
   const togglePlay = useCallback(async () => {
     const audio = audioRef.current
@@ -41,6 +80,7 @@ export function AudioPlayer({ src, onFirstPlay }: AudioPlayerProps) {
       return
     }
 
+    audio.volume = 1
     try {
       await audio.play()
       if (!hasPlayedRef.current) {
@@ -66,22 +106,39 @@ export function AudioPlayer({ src, onFirstPlay }: AudioPlayerProps) {
     if (audio) setDuration(audio.duration)
   }
 
+  const handleLoadedMetadata = () => {
+    const audio = audioRef.current
+    if (audio && audio.duration) setDuration(audio.duration)
+  }
+
+  // onTimeUpdate: aggiorna il progresso esattamente come nell'originale che funzionava
   const handleTimeUpdate = () => {
     const audio = audioRef.current
     if (!audio || !audio.duration) return
     setProgress((audio.currentTime / audio.duration) * 100)
   }
 
-  const handleLoadedMetadata = () => {
-    const audio = audioRef.current
-    if (audio && audio.duration) setDuration(audio.duration)
+  const handlePlay = () => {
+    setIsPlaying(true)
+    startFadeLoop()
   }
 
-  const handleEnded = () => setIsPlaying(false)
+  const handlePause = () => {
+    setIsPlaying(false)
+    stopFadeLoop()
+  }
+
+  const handleEnded = () => {
+    setIsPlaying(false)
+    stopFadeLoop()
+    const audio = audioRef.current
+    if (audio) audio.volume = 1
+  }
 
   const handleError = () => {
     setLoadState('error')
     setIsPlaying(false)
+    stopFadeLoop()
   }
 
   const formatTime = (seconds: number) => {
@@ -107,8 +164,8 @@ export function AudioPlayer({ src, onFirstPlay }: AudioPlayerProps) {
       <audio
         ref={audioRef}
         src={src}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
+        onPlay={handlePlay}
+        onPause={handlePause}
         onCanPlay={handleCanPlay}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
