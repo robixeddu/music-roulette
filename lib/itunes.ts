@@ -10,6 +10,44 @@
 import type { iTunesTrack, iTunesSearchResponse, ArtistResult, TrackOption, TrackQuestion } from './types'
 import { shuffleArray } from './utils'
 
+
+// ─── Filtro qualità brani ─────────────────────────────────────────────────────
+
+/**
+ * Parole che indicano un brano non originale — tributi, karaoke,
+ * cover versions, compilations.
+ * Filtrarli previene opzioni incoerenti tipo "Enter Sandman [Karaoke Version]"
+ * o "Master of Puppets (Originally Performed by Metallica)".
+ */
+const JUNK_PATTERNS = [
+  /karaoke/i,
+  /tribute/i,
+  /originally performed/i,
+  /originally by/i,
+  /made famous/i,
+  /in the style of/i,
+  /cover version/i,
+  /\(re.?recorded/i,
+  /various artists/i,
+  /backing track/i,
+]
+
+function isUsableTrack(t: iTunesTrack, searchedArtist: string): boolean {
+  if (!t.previewUrl || !t.trackId) return false
+
+  // Filtra brani junk da trackName o artistName
+  const haystack = `${t.trackName} ${t.artistName}`
+  if (JUNK_PATTERNS.some(p => p.test(haystack))) return false
+
+  // Verifica che l'artista restituito sia effettivamente quello cercato
+  // (previene contaminazione da artisti omonimi o collaborazioni marginali)
+  const searched = searchedArtist.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const returned = t.artistName.toLowerCase().replace(/[^a-z0-9]/g, '')
+  if (!returned.includes(searched) && !searched.includes(returned)) return false
+
+  return true
+}
+
 const ITUNES_BASE = 'https://itunes.apple.com'
 
 // ─── Fetch helpers ────────────────────────────────────────────────────────────
@@ -29,7 +67,7 @@ async function fetchByArtistName(artistName: string): Promise<iTunesTrack[]> {
     })
     if (!res.ok) return []
     const json: iTunesSearchResponse = await res.json()
-    return json.results.filter(t => t.previewUrl && t.previewUrl.length > 0 && t.trackId)
+    return json.results.filter(t => isUsableTrack(t, artistName))
   } catch {
     return []
   }
