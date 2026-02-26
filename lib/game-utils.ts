@@ -1,15 +1,14 @@
 /**
  * Logica di gioco — funzioni pure, zero side effect.
- * Facilmente testabili in isolamento.
  */
 import type { GameState } from './types'
-import { WIN_SCORE } from './types'
+import { MAX_LIVES } from './types'
 
 /**
  * Calcola il nuovo GameState dopo una risposta dell'utente.
- * Non muta lo stato originale.
+ * winScore è il numero di risposte corrette per vincere (varia per livello).
  */
-export function applyGuess(state: GameState, isCorrect: boolean): GameState {
+export function applyGuess(state: GameState, isCorrect: boolean, winScore: number): GameState {
   if (state.status !== 'playing') return state
 
   if (isCorrect) {
@@ -17,7 +16,7 @@ export function applyGuess(state: GameState, isCorrect: boolean): GameState {
     return {
       ...state,
       score: newScore,
-      status: newScore >= WIN_SCORE ? 'won' : 'playing',
+      status: newScore >= winScore ? 'won' : 'playing',
     }
   } else {
     const newLives = state.lives - 1
@@ -29,20 +28,27 @@ export function applyGuess(state: GameState, isCorrect: boolean): GameState {
   }
 }
 
-/** Genera il messaggio di vittoria in base al punteggio. */
-export function getPrize(score: number): { emoji: string; message: string } {
-  if (score >= WIN_SCORE) {
-    return { emoji: '🏆', message: 'Sei un vero intenditore musicale!' }
+/** Genera il messaggio di vittoria in base al livello. */
+export function getPrize(levelName: string): { emoji: string; message: string } {
+  switch (levelName) {
+    case 'Master':  return { emoji: '👑', message: 'Sei un Master della musica!' }
+    case 'Expert':  return { emoji: '🏆', message: 'Sei un vero esperto musicale!' }
+    case 'Arcade': return { emoji: '🥈', message: 'Ottimo, stai migliorando!' }
+    default:        return { emoji: '🎵', message: 'Bravo! Pronto per il livello successivo?' }
   }
-  return { emoji: '🎵', message: 'Riprova, ci sei quasi!' }
 }
 
-/** Formatta il punteggio come "n / WIN_SCORE". */
-export function formatScore(score: number): string {
-  return `${score} / ${WIN_SCORE}`
+/** Formatta il punteggio come "n / winScore". */
+export function formatScore(score: number, winScore: number): string {
+  return `${score} / ${winScore}`
 }
 
 /** Ritorna true se il gioco è terminato (vinto o perso). */
 export function isGameOver(state: GameState): boolean {
   return state.status === 'won' || state.status === 'lost'
+}
+
+/** Stato iniziale — sempre 3 vite, punteggio 0. */
+export function makeInitialState(): GameState {
+  return { lives: MAX_LIVES, score: 0, status: 'playing' }
 }

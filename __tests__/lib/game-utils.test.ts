@@ -1,19 +1,23 @@
-import { applyGuess, getPrize, isGameOver, formatScore } from '@/lib/game-utils'
+import { applyGuess, getPrize, isGameOver, formatScore, makeInitialState } from '@/lib/game-utils'
 import type { GameState } from '@/lib/types'
-import { INITIAL_GAME_STATE, WIN_SCORE, MAX_LIVES } from '@/lib/types'
+import { MAX_LIVES } from '@/lib/types'
+
+// WIN_SCORE ora è per livello — usiamo il valore del livello Rookie (5) come riferimento nei test
+const WIN_SCORE = 5
+const INITIAL_GAME_STATE = makeInitialState()
 
 // ─── applyGuess ──────────────────────────────────────────────────────────────
 
 describe('applyGuess', () => {
   it('incrementa lo score quando la risposta è corretta', () => {
-    const next = applyGuess(INITIAL_GAME_STATE, true)
+    const next = applyGuess(INITIAL_GAME_STATE, true, WIN_SCORE)
     expect(next.score).toBe(1)
     expect(next.lives).toBe(MAX_LIVES)
     expect(next.status).toBe('playing')
   })
 
   it('decrementa le vite quando la risposta è sbagliata', () => {
-    const next = applyGuess(INITIAL_GAME_STATE, false)
+    const next = applyGuess(INITIAL_GAME_STATE, false, WIN_SCORE)
     expect(next.lives).toBe(MAX_LIVES - 1)
     expect(next.score).toBe(0)
     expect(next.status).toBe('playing')
@@ -21,27 +25,27 @@ describe('applyGuess', () => {
 
   it('imposta status "won" quando si raggiunge WIN_SCORE', () => {
     const almostWon: GameState = { ...INITIAL_GAME_STATE, score: WIN_SCORE - 1 }
-    const next = applyGuess(almostWon, true)
+    const next = applyGuess(almostWon, true, WIN_SCORE)
     expect(next.status).toBe('won')
     expect(next.score).toBe(WIN_SCORE)
   })
 
   it('imposta status "lost" quando le vite finiscono', () => {
     const lastLife: GameState = { ...INITIAL_GAME_STATE, lives: 1 }
-    const next = applyGuess(lastLife, false)
+    const next = applyGuess(lastLife, false, WIN_SCORE)
     expect(next.status).toBe('lost')
     expect(next.lives).toBe(0)
   })
 
   it('non modifica lo stato se il gioco è già finito', () => {
     const won: GameState = { lives: 3, score: WIN_SCORE, status: 'won' }
-    expect(applyGuess(won, true)).toEqual(won)
-    expect(applyGuess(won, false)).toEqual(won)
+    expect(applyGuess(won, true, WIN_SCORE)).toEqual(won)
+    expect(applyGuess(won, false, WIN_SCORE)).toEqual(won)
   })
 
   it('le vite non scendono sotto 0', () => {
     const noLives: GameState = { ...INITIAL_GAME_STATE, lives: 1 }
-    const next = applyGuess(noLives, false)
+    const next = applyGuess(noLives, false, WIN_SCORE)
     expect(next.lives).toBe(0)
     expect(next.status).toBe('lost')
   })
@@ -50,14 +54,24 @@ describe('applyGuess', () => {
 // ─── getPrize ────────────────────────────────────────────────────────────────
 
 describe('getPrize', () => {
-  it('ritorna il trofeo quando score >= WIN_SCORE', () => {
-    const prize = getPrize(WIN_SCORE)
-    expect(prize.emoji).toBe('🏆')
+  it('ritorna il trofeo per Master', () => {
+    const prize = getPrize('Master')
+    expect(prize.emoji).toBe('👑')
     expect(prize.message).toBeTruthy()
   })
 
-  it('ritorna il premio default quando score < WIN_SCORE', () => {
-    const prize = getPrize(WIN_SCORE - 1)
+  it('ritorna il trofeo per Expert', () => {
+    const prize = getPrize('Expert')
+    expect(prize.emoji).toBe('🏆')
+  })
+
+  it('ritorna la medaglia per Arcade', () => {
+    const prize = getPrize('Arcade')
+    expect(prize.emoji).toBe('🥈')
+  })
+
+  it('ritorna il premio default per Rookie', () => {
+    const prize = getPrize('Rookie')
     expect(prize.emoji).toBe('🎵')
   })
 })
@@ -79,8 +93,9 @@ describe('isGameOver', () => {
 // ─── formatScore ─────────────────────────────────────────────────────────────
 
 describe('formatScore', () => {
-  it('formatta il punteggio nel formato "n / WIN_SCORE"', () => {
-    expect(formatScore(3)).toBe(`3 / ${WIN_SCORE}`)
-    expect(formatScore(0)).toBe(`0 / ${WIN_SCORE}`)
+  it('formatta il punteggio nel formato "n / winScore"', () => {
+    expect(formatScore(3, WIN_SCORE)).toBe('3 / 5')
+    expect(formatScore(0, WIN_SCORE)).toBe('0 / 5')
+    expect(formatScore(8, 12)).toBe('8 / 12')
   })
 })

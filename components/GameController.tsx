@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useCallback, useRef, Suspense } from 'react'
+import { useState, useCallback, useRef, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import type { TrackQuestion, TrackOption, GameState } from '@/lib/types'
-import { INITIAL_GAME_STATE } from '@/lib/types'
-import { applyGuess, formatScore } from '@/lib/game-utils'
+import { applyGuess, formatScore, makeInitialState } from '@/lib/game-utils'
+import { loadLevel, saveLevel, getNextLevel, calcLeaderboardScore } from '@/lib/levels'
+import type { Level } from '@/lib/levels'
 import { QuestionView } from './QuestionView'
 import { LivesIndicator } from './LivesIndicator'
 import { Prize } from './Prize'
@@ -19,17 +20,14 @@ export type GameMode =
 
 function fetchQuestion(mode: GameMode, usedIds: Set<number>): Promise<TrackQuestion> {
   const params = new URLSearchParams()
-
   if (mode.type === 'artist') {
     params.set('artistName', mode.artistName)
   } else {
     params.set('genreId', mode.genreId)
   }
-
   if (usedIds.size > 0) {
     params.set('usedIds', Array.from(usedIds).join(','))
   }
-
   return fetch(`/api/track?${params}`, { cache: 'no-store' }).then(res => {
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     return res.json()
@@ -48,15 +46,17 @@ interface GameControllerProps {
 export function GameController({ firstQuestionPromise, gameMode: initialMode }: GameControllerProps) {
   const router = useRouter()
   const [gameMode, setGameMode] = useState<GameMode>(initialMode)
-  const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE)
+  const [gameState, setGameState] = useState<GameState>(makeInitialState())
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [questionPromise, setQuestionPromise] = useState(firstQuestionPromise)
 
-  // Tutti i trackId già apparsi (correct + fakes) in questa sessione.
-  const usedIdsRef = useRef<Set<number>>(new Set())
+  // Livello corrente — caricato da localStorage lato client
+  const [level, setLevel] = useState<Level>({ id: 1, name: 'Rookie', winScore: 5, multiplier: 1 })
+  useEffect(() => {
+    setLevel(loadLevel())
+  }, [])
 
-  // Ref alla questionPromise corrente: permette di leggere gli id
-  // della domanda in corso dentro handleSelect senza closure stale.
+  const usedIdsRef = useRef<Set<number>>(new Set())
   const questionPromiseRef = useRef<Promise<TrackQuestion>>(firstQuestionPromise)
 
   const nextQuestion = useCallback((mode: GameMode) => {
@@ -68,7 +68,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
 
   const restartGame = useCallback(() => {
     usedIdsRef.current = new Set()
-    setGameState(INITIAL_GAME_STATE)
+    setGameState(makeInitialState())
     setSelectedId(null)
     const p = fetchQuestion(gameMode, usedIdsRef.current)
     questionPromiseRef.current = p
@@ -80,25 +80,30 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     const newMode: GameMode = { type: 'artist', artistName }
     usedIdsRef.current = new Set()
     setGameMode(newMode)
-    setGameState(INITIAL_GAME_STATE)
+    setGameState(makeInitialState())
     setSelectedId(null)
     const p = fetchQuestion(newMode, usedIdsRef.current)
     questionPromiseRef.current = p
     setQuestionPromise(p)
   }, [router])
 
+  // Avanza al livello successivo dopo la vittoria
+  const advanceLevel = useCallback(() => {
+    const next = getNextLevel(level)
+    if (next) {
+      saveLevel(next)
+      setLevel(next)
+    }
+  }, [level])
+
   const handleSelect = useCallback(
     (option: TrackOption) => {
       if (selectedId !== null) return
       setSelectedId(option.id)
-
       setGameState(prev => {
-        const newState = applyGuess(prev, option.isCorrect)
+        const newState = applyGuess(prev, option.isCorrect, level.winScore)
         if (newState.status === 'playing') {
           setTimeout(() => {
-            // La questionPromise è già settled quando l'utente risponde.
-            // Leggiamo gli id PRIMA di lanciare la fetch successiva,
-            // così usedIdsRef è aggiornato nel momento corretto.
             questionPromiseRef.current.then(q => {
               q.options.forEach(o => usedIdsRef.current.add(o.id))
               nextQuestion(gameMode)
@@ -108,16 +113,22 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
         return newState
       })
     },
-    [selectedId, nextQuestion, gameMode]
+    [selectedId, nextQuestion, gameMode, level.winScore]
   )
+
+  // Punteggio classifica = domande vinte × moltiplicatore livello
+  const leaderboardScore = calcLeaderboardScore(gameState.score, level)
 
   if (gameState.status === 'won') {
     return (
       <Prize
         score={gameState.score}
+        leaderboardScore={leaderboardScore}
+        level={level}
         gameName={getGameName(gameMode)}
         onRestart={restartGame}
         onArtistSelect={switchToArtist}
+        onAdvanceLevel={advanceLevel}
       />
     )
   }
@@ -136,11 +147,14 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     <div className="game-board">
       <header className="game-board__header">
         <LivesIndicator lives={gameState.lives} />
+        <div className="game-board__level" aria-label={`Livello: ${level.name}`}>
+          <span aria-hidden="true" className="game-board__level-name">{level.name}</span>
+        </div>
         <div
           className="game-board__score"
-          aria-label={`Punteggio: ${formatScore(gameState.score)}`}
+          aria-label={`Punteggio: ${formatScore(gameState.score, level.winScore)}`}
         >
-          <span aria-hidden="true">🎯 {formatScore(gameState.score)}</span>
+          <span aria-hidden="true">🎯 {formatScore(gameState.score, level.winScore)}</span>
         </div>
       </header>
 

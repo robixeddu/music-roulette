@@ -1,9 +1,6 @@
 import { ArtistSearch } from "@/components/ArtistSearch";
+import Link from "next/link";
 
-/**
- * Homepage — RSC shell.
- * ArtistSearch è l'unico Client Component (gestisce input + fetch autocomplete).
- */
 export default function HomePage() {
   return (
     <div className="home">
@@ -22,7 +19,7 @@ export default function HomePage() {
           <li>Ascolta l&apos;estratto di 30 secondi</li>
           <li>Scegli artista e titolo tra 4 opzioni</li>
           <li>Hai 3 vite — ogni errore ne costa una</li>
-          <li>Raggiungi 5 punti per vincere il premio 🏆</li>
+          <li>Vinci il livello e scala fino a Master 👑</li>
         </ul>
 
         <div className="home__ctas">
@@ -35,6 +32,10 @@ export default function HomePage() {
           </div>
 
           <ArtistSearch />
+
+          <Link href="/leaderboard" className="home__leaderboard-link">
+            🏆 Hall of Fame
+          </Link>
         </div>
       </div>
     </div>

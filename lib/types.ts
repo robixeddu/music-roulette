@@ -59,9 +59,28 @@ export interface GameState {
   status: 'playing' | 'won' | 'lost'
 }
 
+// ─── Leaderboard ─────────────────────────────────────────────────────────────
+
+export interface LeaderboardEntry {
+  id: number
+  nickname: string
+  score: number        // punteggio classifica = domande × moltiplicatore
+  level: number
+  level_name: string
+  genre: string        // nome genere o artista
+  created_at: string
+}
+
+export interface SubmitScorePayload {
+  nickname: string
+  score: number
+  level: number
+  level_name: string
+  genre: string
+}
+
 // ─── Costanti ─────────────────────────────────────────────────────────────────
 
-export const WIN_SCORE = 5
 export const MAX_LIVES = 3
 
 export const INITIAL_GAME_STATE: GameState = {
