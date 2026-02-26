@@ -542,7 +542,6 @@ body {
   .audio-player__btn { width: 36px; height: 36px; }
 }
 
-
 /* ─── Homepage compatta su schermi piccoli (es. iPhone 12 mini) ─────────── */
 /*
   Target: viewport height ≤ 740px (12 mini ha ~720px utili con Safari UI).
@@ -863,39 +862,43 @@ body {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  z-index: 100;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
-}
-
-/* Apre sotto l'input */
-.artist-search__dropdown--down {
-  top: calc(100% + 4px);
-  animation: slideDown 0.15s var(--ease-out);
-}
-
-/* Apre sopra l'input (flip) */
-.artist-search__dropdown--up {
-  bottom: calc(100% + 4px);
-  animation: slideUp 0.15s var(--ease-out);
-}
-
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Lista condivisa (desktop dropdown + mobile sheet) */
-.artist-search__list {
   list-style: none;
   max-height: 280px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.artist-search__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  transition: background 0.1s;
+  gap: 0.75rem;
+}
+
+.artist-search__option:hover,
+.artist-search__option:focus {
+  background: var(--bg-surface);
+  outline: none;
+}
+
+.artist-search__option-name {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.artist-search__option-genre {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
 }
 
 /* ─── Mobile: bottom sheet ─────────────────────────────────────────────── */
@@ -924,7 +927,9 @@ body {
   z-index: 201;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   animation: sheetUp 0.28s var(--ease-out);
-  max-height: 60vh;
+  /* Altezza fissa: non si restringe con pochi risultati */
+  height: 50vh;
+  min-height: 320px;
   display: flex;
   flex-direction: column;
 }
@@ -959,7 +964,7 @@ body {
 
 .artist-search__sheet-close {
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--radius);
   border-radius: var(--radius);
   color: var(--text-secondary);
   font-family: var(--font-mono);
@@ -980,47 +985,19 @@ body {
   color: var(--text-primary);
 }
 
+/* Lista occupa tutto lo spazio rimanente — altezza gestita dallo sheet */
 .artist-search__sheet .artist-search__list {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  max-height: none;
 }
 
+/* Empty state centrato verticalmente nello spazio rimasto */
 .artist-search__sheet-empty {
-  padding: 1.5rem 1rem;
-  text-align: center;
-  color: var(--text-dim);
-  font-size: 0.85rem;
-}
-
-.artist-search__option {
+  flex: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.875rem 1rem;
-  min-height: 48px;
-  -webkit-tap-highlight-color: transparent;
-  cursor: pointer;
-  transition: background 0.1s;
-  gap: 0.75rem;
-}
-
-.artist-search__option:hover,
-.artist-search__option:focus {
-  background: var(--bg-surface);
-  outline: none;
-}
-
-.artist-search__option-name {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  color: var(--text-primary);
-}
-
-.artist-search__option-genre {
-  font-size: 0.7rem;
+  justify-content: center;
   color: var(--text-dim);
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
+  font-size: 0.85rem;
 }
