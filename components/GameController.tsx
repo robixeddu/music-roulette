@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, Suspense } from 'react'
+import { useState, useCallback, useRef, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import type { TrackQuestion, TrackOption, GameState } from '@/lib/types'
 import { INITIAL_GAME_STATE } from '@/lib/types'
@@ -17,11 +17,20 @@ export type GameMode =
   | { type: 'genre'; genreId: string }
   | { type: 'artist'; artistName: string }
 
-function fetchQuestion(mode: GameMode): Promise<TrackQuestion> {
-  const param = mode.type === 'artist'
-    ? `artistName=${encodeURIComponent(mode.artistName)}`
-    : `genreId=${mode.genreId}`
-  return fetch(`/api/track?${param}`, { cache: 'no-store' }).then(res => {
+function fetchQuestion(mode: GameMode, usedIds: Set<number>): Promise<TrackQuestion> {
+  const params = new URLSearchParams()
+
+  if (mode.type === 'artist') {
+    params.set('artistName', mode.artistName)
+  } else {
+    params.set('genreId', mode.genreId)
+  }
+
+  if (usedIds.size > 0) {
+    params.set('usedIds', Array.from(usedIds).join(','))
+  }
+
+  return fetch(`/api/track?${params}`, { cache: 'no-store' }).then(res => {
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     return res.json()
   })
@@ -38,41 +47,63 @@ interface GameControllerProps {
 
 export function GameController({ firstQuestionPromise, gameMode: initialMode }: GameControllerProps) {
   const router = useRouter()
-  // gameMode in stato: può cambiare quando l'utente cerca un nuovo artista
-  // dalla schermata Prize/GameOver senza navigare
   const [gameMode, setGameMode] = useState<GameMode>(initialMode)
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE)
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [questionPromise, setQuestionPromise] = useState(firstQuestionPromise)
 
+  // Tutti i trackId già apparsi (correct + fakes) in questa sessione.
+  const usedIdsRef = useRef<Set<number>>(new Set())
+
+  // Ref alla questionPromise corrente: permette di leggere gli id
+  // della domanda in corso dentro handleSelect senza closure stale.
+  const questionPromiseRef = useRef<Promise<TrackQuestion>>(firstQuestionPromise)
+
   const nextQuestion = useCallback((mode: GameMode) => {
     setSelectedId(null)
-    setQuestionPromise(fetchQuestion(mode))
+    const p = fetchQuestion(mode, usedIdsRef.current)
+    questionPromiseRef.current = p
+    setQuestionPromise(p)
   }, [])
 
   const restartGame = useCallback(() => {
+    usedIdsRef.current = new Set()
     setGameState(INITIAL_GAME_STATE)
     setSelectedId(null)
-    setQuestionPromise(fetchQuestion(gameMode))
+    const p = fetchQuestion(gameMode, usedIdsRef.current)
+    questionPromiseRef.current = p
+    setQuestionPromise(p)
   }, [gameMode])
 
   const switchToArtist = useCallback((artistName: string) => {
     router.replace(`/game?artistName=${encodeURIComponent(artistName)}`)
     const newMode: GameMode = { type: 'artist', artistName }
+    usedIdsRef.current = new Set()
     setGameMode(newMode)
     setGameState(INITIAL_GAME_STATE)
     setSelectedId(null)
-    setQuestionPromise(fetchQuestion(newMode))
+    const p = fetchQuestion(newMode, usedIdsRef.current)
+    questionPromiseRef.current = p
+    setQuestionPromise(p)
   }, [router])
 
   const handleSelect = useCallback(
     (option: TrackOption) => {
       if (selectedId !== null) return
       setSelectedId(option.id)
+
       setGameState(prev => {
         const newState = applyGuess(prev, option.isCorrect)
         if (newState.status === 'playing') {
-          setTimeout(() => nextQuestion(gameMode), 1500)
+          setTimeout(() => {
+            // La questionPromise è già settled quando l'utente risponde.
+            // Leggiamo gli id PRIMA di lanciare la fetch successiva,
+            // così usedIdsRef è aggiornato nel momento corretto.
+            questionPromiseRef.current.then(q => {
+              q.options.forEach(o => usedIdsRef.current.add(o.id))
+              nextQuestion(gameMode)
+            })
+          }, 1500)
         }
         return newState
       })
@@ -118,7 +149,9 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
           <GameError
             onRetry={() => {
               reset()
-              setQuestionPromise(fetchQuestion(gameMode))
+              const p = fetchQuestion(gameMode, usedIdsRef.current)
+              questionPromiseRef.current = p
+              setQuestionPromise(p)
             }}
           />
         )}

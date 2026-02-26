@@ -11,14 +11,27 @@ import { getGenreById, GENRES } from '@/lib/genres'
 /**
  * GET /api/track?genreId=rock
  * GET /api/track?artistName=Metallica
+ * GET /api/track?artistName=Metallica&usedIds=123,456,789
  *
- * `artistName` ha priorità su `genreId` se entrambi presenti.
+ * usedIds: trackId separati da virgola già visti in questa sessione.
+ * Vengono esclusi dal pool prima di pickQuestionTracks.
+ *
+ * artistName ha priorità su genreId se entrambi presenti.
  * no-store: ogni domanda deve essere diversa.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
   const artistName = searchParams.get('artistName')
   const genreId = searchParams.get('genreId')
+
+  // Parsing usedIds dalla query string
+  const usedIdsParam = searchParams.get('usedIds') ?? ''
+  const usedIds = new Set<number>(
+    usedIdsParam
+      .split(',')
+      .map(s => parseInt(s, 10))
+      .filter(n => !isNaN(n))
+  )
 
   try {
     if (artistName) {
@@ -29,7 +42,7 @@ export async function GET(request: NextRequest) {
           { status: 422 }
         )
       }
-      const { correct, fakes } = pickQuestionTracks(tracks, 3)
+      const { correct, fakes } = pickQuestionTracks(tracks, 3, usedIds)
       const question = buildArtistQuestion(correct, fakes)
       return NextResponse.json(question, { headers: { 'Cache-Control': 'no-store' } })
     }
@@ -37,7 +50,7 @@ export async function GET(request: NextRequest) {
     // Modalità genere (default)
     const genre = getGenreById(genreId ?? '') ?? GENRES[0]
     const tracks = await fetchTracksByGenre(genre.searchTerms)
-    const { correct, fakes } = pickQuestionTracks(tracks, 3)
+    const { correct, fakes } = pickQuestionTracks(tracks, 3, usedIds)
     const question = buildQuestion(correct, fakes)
     return NextResponse.json(question, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {

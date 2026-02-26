@@ -12,18 +12,6 @@ interface QuestionViewProps {
   onSelect: (option: TrackOption) => void
 }
 
-/**
- * QuestionView — consuma la Promise con use().
- *
- * Questo componente non sa nulla di loading o errori:
- * - Se la Promise è pending → Suspense mostra GameSkeleton
- * - Se la Promise rigetta → ErrorBoundary mostra GameError
- * - Se la Promise si risolve → renderizza la domanda
- *
- * È separato da GameController appositamente: quando questionPromise
- * cambia (nuova domanda), solo QuestionView viene ri-sospeso,
- * mentre GameController (vite, punteggio, header) rimane visibile.
- */
 export function QuestionView({ questionPromise, selectedId, onSelect }: QuestionViewProps) {
   const question = use(questionPromise)
 

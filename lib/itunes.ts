@@ -20,7 +20,7 @@ async function fetchByArtistName(artistName: string): Promise<iTunesTrack[]> {
     media: 'music',
     entity: 'song',
     attribute: 'artistTerm',
-    limit: '10',
+    limit: '25',          // era 10 — più brani per artista
     country: 'US',
   })
   try {
@@ -38,17 +38,14 @@ async function fetchByArtistName(artistName: string): Promise<iTunesTrack[]> {
 // ─── Modalità genere ──────────────────────────────────────────────────────────
 
 /**
- * Campiona `sampleSize` artisti casuali da searchTerms,
- * li fetcha in parallelo su iTunes e aggrega i brani deduplicati.
+ * Fetcha TUTTI gli artisti di searchTerms in parallelo (era campionato a 5).
+ * Pool risultante: ~150-200 brani invece di ~50.
  */
 export async function fetchTracksByGenre(
   searchTerms: string[],
-  sampleSize = 5
 ): Promise<iTunesTrack[]> {
-  const sampled = shuffleArray(searchTerms).slice(0, sampleSize)
-
   const results = await Promise.allSettled(
-    sampled.map(term => fetchByArtistName(term))
+    searchTerms.map(term => fetchByArtistName(term))
   )
 
   const tracks = results
@@ -131,16 +128,28 @@ export async function fetchTracksByArtist(artistName: string): Promise<iTunesTra
 
 // ─── Question building ────────────────────────────────────────────────────────
 
+/**
+ * Sceglie correct + fakes escludendo i trackId già usati in questa sessione.
+ * usedIds viene passato dall'API route e popolato da GameController.
+ */
 export function pickQuestionTracks(
   tracks: iTunesTrack[],
-  fakeCount = 3
+  fakeCount = 3,
+  usedIds: Set<number> = new Set()
 ): { correct: iTunesTrack; fakes: iTunesTrack[] } {
-  if (tracks.length < fakeCount + 1) {
+  // Filtra i brani già usati come correct in domande precedenti
+  const available = tracks.filter(t => !usedIds.has(t.trackId))
+
+  // Se il pool disponibile è esaurito, ricomincia dall'inizio (fallback)
+  const pool = available.length >= fakeCount + 1 ? available : tracks
+
+  if (pool.length < fakeCount + 1) {
     throw new Error('Pool di brani troppo piccolo per costruire una domanda')
   }
-  const correctIndex = Math.floor(Math.random() * tracks.length)
-  const correct = tracks[correctIndex]
-  const fakes = shuffleArray(tracks.filter((_, i) => i !== correctIndex)).slice(0, fakeCount)
+
+  const correctIndex = Math.floor(Math.random() * pool.length)
+  const correct = pool[correctIndex]
+  const fakes = shuffleArray(pool.filter((_, i) => i !== correctIndex)).slice(0, fakeCount)
   return { correct, fakes }
 }
 
