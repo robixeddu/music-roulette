@@ -8,29 +8,38 @@ import {
 } from '@/lib/itunes'
 import { getGenreById, GENRES } from '@/lib/genres'
 
+// Limiti di input
+const MAX_ARTIST_NAME_LEN = 100
+const MAX_USED_IDS        = 200  // max id tracciabili per sessione
+const MAX_GENRE_ID_LEN    = 50
+
 /**
  * GET /api/track?genreId=rock
- * GET /api/track?artistName=Metallica
- * GET /api/track?artistName=Metallica&usedIds=123,456,789
- *
- * usedIds: trackId separati da virgola già visti in questa sessione.
- * Vengono esclusi dal pool prima di pickQuestionTracks.
- *
- * artistName ha priorità su genreId se entrambi presenti.
- * no-store: ogni domanda deve essere diversa.
+ * GET /api/track?artistName=Metallica&usedIds=123,456
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
-  const artistName = searchParams.get('artistName')
-  const genreId = searchParams.get('genreId')
 
-  // Parsing usedIds dalla query string
+  // Sanifica artistName
+  const rawArtistName = searchParams.get('artistName')
+  const artistName = rawArtistName
+    ? rawArtistName.trim().slice(0, MAX_ARTIST_NAME_LEN)
+    : null
+
+  // Sanifica genreId
+  const rawGenreId = searchParams.get('genreId')
+  const genreId = rawGenreId
+    ? rawGenreId.trim().slice(0, MAX_GENRE_ID_LEN)
+    : null
+
+  // Sanifica e limita usedIds
   const usedIdsParam = searchParams.get('usedIds') ?? ''
   const usedIds = new Set<number>(
     usedIdsParam
       .split(',')
-      .map(s => parseInt(s, 10))
-      .filter(n => !isNaN(n))
+      .slice(0, MAX_USED_IDS)          // ignora oltre il limite
+      .map(s => parseInt(s.trim(), 10))
+      .filter(n => Number.isInteger(n) && n > 0)
   )
 
   try {

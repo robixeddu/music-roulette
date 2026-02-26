@@ -52,22 +52,22 @@ export function ChoiceList({ options, selectedId, result, onSelect, disabled }: 
             aria-describedby={showFeedback ? feedbackId : undefined}
           >
             <span className="choice-btn__label">{option.label}</span>
-            {showFeedback && (
-              <span
-                id={feedbackId}
-                className="choice-btn__feedback"
-                aria-label={
-                  state === 'correct'
-                    ? 'Risposta corretta'
-                    : state === 'wrong'
-                    ? 'Risposta sbagliata'
-                    : undefined
-                }
-              >
-                {state === 'correct' && '✓'}
-                {state === 'wrong' && '✗'}
-              </span>
-            )}
+            {/* Sempre nel DOM per riservare lo spazio — evita CLS quando appare */}
+            <span
+              id={feedbackId}
+              className="choice-btn__feedback"
+              aria-hidden={!showFeedback}
+              aria-label={
+                state === 'correct'
+                  ? 'Risposta corretta'
+                  : state === 'wrong'
+                  ? 'Risposta sbagliata'
+                  : undefined
+              }
+            >
+              {state === 'correct' && '✓'}
+              {state === 'wrong' && '✗'}
+            </span>
           </button>
         )
       })}
