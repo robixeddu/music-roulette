@@ -13,7 +13,7 @@ export interface Level {
 
 export const LEVELS: Level[] = [
   { id: 1, name: 'Rookie',  winScore: 5,  multiplier: 1 },
-  { id: 2, name: 'Arcade', winScore: 8,  multiplier: 2 },
+  { id: 2, name: 'Arcade',  winScore: 8,  multiplier: 2 },
   { id: 3, name: 'Expert',  winScore: 12, multiplier: 3 },
   { id: 4, name: 'Master',  winScore: 15, multiplier: 5 },
 ]
@@ -31,11 +31,42 @@ export function getNextLevel(current: Level): Level | null {
 }
 
 /**
- * Calcola il punteggio classifica.
- * score = domande vinte × moltiplicatore livello
+ * Moltiplicatore tempo basato sulla media ms di risposta per domanda corretta.
+ * null = l'utente non ha mai premuto play → nessun bonus (×1.0)
+ *
+ * < 5s  → ×2.0  (risposta fulminea)
+ * < 10s → ×1.5  (risposta rapida)
+ * < 20s → ×1.0  (risposta normale)
+ * ≥ 20s → ×0.5  (risposta lenta)
  */
-export function calcLeaderboardScore(wonQuestions: number, level: Level): number {
-  return wonQuestions * level.multiplier
+export function getTimeMultiplier(avgTimeMs: number | null): number {
+  if (avgTimeMs === null) return 1.0
+  const s = avgTimeMs / 1000
+  if (s < 5)  return 2.0
+  if (s < 10) return 1.5
+  if (s < 20) return 1.0
+  return 0.5
+}
+
+/** Label leggibile per il moltiplicatore tempo. */
+export function getTimeMultiplierLabel(avgTimeMs: number | null): string {
+  const m = getTimeMultiplier(avgTimeMs)
+  if (m === 2.0) return '⚡ ×2.0'
+  if (m === 1.5) return '🔥 ×1.5'
+  if (m === 1.0) return '✓ ×1.0'
+  return '🐢 ×0.5'
+}
+
+/**
+ * Calcola il punteggio classifica finale.
+ * score = round(domande_vinte × moltiplicatore_livello × moltiplicatore_tempo)
+ */
+export function calcLeaderboardScore(
+  wonQuestions: number,
+  level: Level,
+  avgTimeMs: number | null = null
+): number {
+  return Math.round(wonQuestions * level.multiplier * getTimeMultiplier(avgTimeMs))
 }
 
 /** Legge il livello corrente da localStorage. Ritorna livello 1 se assente. */

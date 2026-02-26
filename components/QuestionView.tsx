@@ -10,9 +10,11 @@ interface QuestionViewProps {
   questionPromise: Promise<TrackQuestion>
   selectedId: number | null
   onSelect: (option: TrackOption) => void
+  /** Chiamato al primo play dell'audio — usato da GameController per avviare il timer */
+  onFirstPlay?: () => void
 }
 
-export function QuestionView({ questionPromise, selectedId, onSelect }: QuestionViewProps) {
+export function QuestionView({ questionPromise, selectedId, onSelect, onFirstPlay }: QuestionViewProps) {
   const question = use(questionPromise)
 
   const result = selectedId === null
@@ -35,7 +37,7 @@ export function QuestionView({ questionPromise, selectedId, onSelect }: Question
         <div className="game-board__cover-overlay" aria-hidden="true" />
       </div>
 
-      <AudioPlayer src={question.previewUrl} />
+      <AudioPlayer src={question.previewUrl} onFirstPlay={onFirstPlay} />
 
       <p className="sr-only">
         Ascolta l&apos;estratto e scegli l&apos;artista e il titolo corretti tra le opzioni.

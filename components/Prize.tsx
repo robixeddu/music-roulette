@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import { getPrize } from '@/lib/game-utils'
-import { getNextLevel, MAX_LEVEL } from '@/lib/levels'
+import { getNextLevel, MAX_LEVEL, getTimeMultiplierLabel } from '@/lib/levels'
 import type { Level } from '@/lib/levels'
 import { RetryButtons } from './RetryButtons'
 
 interface PrizeProps {
   score: number
   leaderboardScore: number
+  avgTimeMs: number | null
   level: Level
   gameName: string
   onRestart: () => void
@@ -21,6 +22,7 @@ type SubmitState = 'idle' | 'loading' | 'success' | 'error'
 export function Prize({
   score,
   leaderboardScore,
+  avgTimeMs,
   level,
   gameName,
   onRestart,
@@ -48,6 +50,7 @@ export function Prize({
           level: level.id,
           level_name: level.name,
           genre: gameName,
+          avg_time_ms: avgTimeMs,
         }),
       })
       if (!res.ok) throw new Error()
@@ -62,6 +65,8 @@ export function Prize({
     onAdvanceLevel()
     onRestart()
   }
+
+  const avgTimeSec = avgTimeMs !== null ? (avgTimeMs / 1000).toFixed(1) : null
 
   return (
     <div
@@ -78,9 +83,18 @@ export function Prize({
         <p className="prize__score-raw" aria-hidden="true">
           {score} risposte corrette
         </p>
+        <div className="prize__score-breakdown">
+          <span className="prize__score-item">
+            livello <strong>×{level.multiplier}</strong>
+          </span>
+          <span className="prize__score-sep">·</span>
+          <span className="prize__score-item">
+            tempo {getTimeMultiplierLabel(avgTimeMs)}
+            {avgTimeSec && <span className="prize__score-time"> ({avgTimeSec}s avg)</span>}
+          </span>
+        </div>
         <p className="prize__score-final">
           Punteggio classifica: <strong>{leaderboardScore}</strong>
-          <span className="prize__multiplier"> (×{level.multiplier})</span>
         </p>
       </div>
 

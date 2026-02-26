@@ -64,10 +64,11 @@ export interface GameState {
 export interface LeaderboardEntry {
   id: number
   nickname: string
-  score: number        // punteggio classifica = domande × moltiplicatore
+  score: number        // punteggio classifica = domande × moltiplicatore_livello × moltiplicatore_tempo
   level: number
   level_name: string
-  genre: string        // nome genere o artista
+  genre: string
+  avg_time_ms: number | null  // media ms per risposta corretta, null se nessun play
   created_at: string
 }
 
@@ -77,6 +78,7 @@ export interface SubmitScorePayload {
   level: number
   level_name: string
   genre: string
+  avg_time_ms: number | null
 }
 
 // ─── Costanti ─────────────────────────────────────────────────────────────────

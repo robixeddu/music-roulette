@@ -52,22 +52,48 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
 
   // Livello corrente — caricato da localStorage lato client
   const [level, setLevel] = useState<Level>({ id: 1, name: 'Rookie', winScore: 5, multiplier: 1 })
-  useEffect(() => {
-    setLevel(loadLevel())
-  }, [])
+  useEffect(() => { setLevel(loadLevel()) }, [])
 
   const usedIdsRef = useRef<Set<number>>(new Set())
   const questionPromiseRef = useRef<Promise<TrackQuestion>>(firstQuestionPromise)
 
+  // ─── Timer per risposta ───────────────────────────────────────────────────
+  // playStartRef: timestamp del primo play per la domanda corrente (null = non ancora)
+  // timeSamplesRef: array dei ms impiegati per ogni risposta corretta
+  const playStartRef    = useRef<number | null>(null)
+  const timeSamplesRef  = useRef<number[]>([])
+
+  /** Chiamato da QuestionView → AudioPlayer al primo play di ogni domanda */
+  const handleFirstPlay = useCallback(() => {
+    playStartRef.current = Date.now()
+  }, [])
+
+  /** Calcola la media ms delle risposte corrette. null se nessun campione. */
+  const getAvgTimeMs = useCallback((): number | null => {
+    const samples = timeSamplesRef.current
+    if (samples.length === 0) return null
+    return Math.round(samples.reduce((a, b) => a + b, 0) / samples.length)
+  }, [])
+
+  /** Reset timer per nuova domanda */
+  const resetTimer = useCallback(() => {
+    playStartRef.current = null
+  }, [])
+
+  // ─── Navigazione domande ──────────────────────────────────────────────────
+
   const nextQuestion = useCallback((mode: GameMode) => {
     setSelectedId(null)
+    resetTimer()
     const p = fetchQuestion(mode, usedIdsRef.current)
     questionPromiseRef.current = p
     setQuestionPromise(p)
-  }, [])
+  }, [resetTimer])
 
   const restartGame = useCallback(() => {
     usedIdsRef.current = new Set()
+    timeSamplesRef.current = []
+    playStartRef.current = null
     setGameState(makeInitialState())
     setSelectedId(null)
     const p = fetchQuestion(gameMode, usedIdsRef.current)
@@ -79,6 +105,8 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     router.replace(`/game?artistName=${encodeURIComponent(artistName)}`)
     const newMode: GameMode = { type: 'artist', artistName }
     usedIdsRef.current = new Set()
+    timeSamplesRef.current = []
+    playStartRef.current = null
     setGameMode(newMode)
     setGameState(makeInitialState())
     setSelectedId(null)
@@ -87,7 +115,6 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     setQuestionPromise(p)
   }, [router])
 
-  // Avanza al livello successivo dopo la vittoria
   const advanceLevel = useCallback(() => {
     const next = getNextLevel(level)
     if (next) {
@@ -96,10 +123,19 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     }
   }, [level])
 
+  // ─── Selezione risposta ───────────────────────────────────────────────────
+
   const handleSelect = useCallback(
     (option: TrackOption) => {
       if (selectedId !== null) return
       setSelectedId(option.id)
+
+      // Campiona il tempo se la domanda è stata avviata
+      if (option.isCorrect && playStartRef.current !== null) {
+        const elapsed = Date.now() - playStartRef.current
+        timeSamplesRef.current.push(elapsed)
+      }
+
       setGameState(prev => {
         const newState = applyGuess(prev, option.isCorrect, level.winScore)
         if (newState.status === 'playing') {
@@ -116,14 +152,16 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     [selectedId, nextQuestion, gameMode, level.winScore]
   )
 
-  // Punteggio classifica = domande vinte × moltiplicatore livello
-  const leaderboardScore = calcLeaderboardScore(gameState.score, level)
+  // Punteggio classifica = domande × moltiplicatore_livello × moltiplicatore_tempo
+  const avgTimeMs = getAvgTimeMs()
+  const leaderboardScore = calcLeaderboardScore(gameState.score, level, avgTimeMs)
 
   if (gameState.status === 'won') {
     return (
       <Prize
         score={gameState.score}
         leaderboardScore={leaderboardScore}
+        avgTimeMs={avgTimeMs}
         level={level}
         gameName={getGameName(gameMode)}
         onRestart={restartGame}
@@ -175,6 +213,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
             questionPromise={questionPromise}
             selectedId={selectedId}
             onSelect={handleSelect}
+            onFirstPlay={handleFirstPlay}
           />
         </Suspense>
       </ErrorBoundary>
