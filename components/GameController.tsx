@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import type { TrackQuestion, TrackOption, GameState } from '@/lib/types'
 import { applyGuess, formatScore, makeInitialState } from '@/lib/game-utils'
-import { loadLevel, saveLevel, getNextLevel, calcLeaderboardScore } from '@/lib/levels'
+import { loadLevel, saveLevel, getNextLevel, calcLeaderboardScore, MAX_LEVEL } from '@/lib/levels'
 import type { Level } from '@/lib/levels'
 import { QuestionView } from './QuestionView'
 import { LivesIndicator } from './LivesIndicator'
@@ -54,28 +54,23 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
   const [level, setLevel] = useState<Level>({ id: 1, name: 'Rookie', winScore: 5, multiplier: 1 })
   useEffect(() => { setLevel(loadLevel()) }, [])
 
-  const usedIdsRef = useRef<Set<number>>(new Set())
-  const questionPromiseRef = useRef<Promise<TrackQuestion>>(firstQuestionPromise)
+  const usedIdsRef          = useRef<Set<number>>(new Set())
+  const questionPromiseRef  = useRef<Promise<TrackQuestion>>(firstQuestionPromise)
 
-  // ─── Timer per risposta ───────────────────────────────────────────────────
-  // playStartRef: timestamp del primo play per la domanda corrente (null = non ancora)
-  // timeSamplesRef: array dei ms impiegati per ogni risposta corretta
-  const playStartRef    = useRef<number | null>(null)
-  const timeSamplesRef  = useRef<number[]>([])
+  // ─── Timer risposta ───────────────────────────────────────────────────────
+  const playStartRef   = useRef<number | null>(null)
+  const timeSamplesRef = useRef<number[]>([])
 
-  /** Chiamato da QuestionView → AudioPlayer al primo play di ogni domanda */
   const handleFirstPlay = useCallback(() => {
     playStartRef.current = Date.now()
   }, [])
 
-  /** Calcola la media ms delle risposte corrette. null se nessun campione. */
   const getAvgTimeMs = useCallback((): number | null => {
     const samples = timeSamplesRef.current
     if (samples.length === 0) return null
     return Math.round(samples.reduce((a, b) => a + b, 0) / samples.length)
   }, [])
 
-  /** Reset timer per nuova domanda */
   const resetTimer = useCallback(() => {
     playStartRef.current = null
   }, [])
@@ -115,6 +110,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     setQuestionPromise(p)
   }, [router])
 
+  // Avanza livello dopo vittoria — non resetta timeSamples (accumulo su tutta la sessione)
   const advanceLevel = useCallback(() => {
     const next = getNextLevel(level)
     if (next) {
@@ -130,7 +126,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
       if (selectedId !== null) return
       setSelectedId(option.id)
 
-      // Campiona il tempo se la domanda è stata avviata
+      // Campiona il tempo solo per risposte corrette con play avviato
       if (option.isCorrect && playStartRef.current !== null) {
         const elapsed = Date.now() - playStartRef.current
         timeSamplesRef.current.push(elapsed)
@@ -152,16 +148,29 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     [selectedId, nextQuestion, gameMode, level.winScore]
   )
 
-  // Punteggio classifica = domande × moltiplicatore_livello × moltiplicatore_tempo
   const avgTimeMs = getAvgTimeMs()
   const leaderboardScore = calcLeaderboardScore(gameState.score, level, avgTimeMs)
 
+  // ─── Vittoria livello ─────────────────────────────────────────────────────
+  // Se è l'ultimo livello (Master) → GameOver con form salvataggio
+  // Altrimenti → Prize con avanzamento al livello successivo
   if (gameState.status === 'won') {
+    if (level.id >= MAX_LEVEL) {
+      return (
+        <GameOver
+          score={gameState.score}
+          leaderboardScore={leaderboardScore}
+          avgTimeMs={avgTimeMs}
+          level={level}
+          gameName={getGameName(gameMode)}
+          isVictory={true}
+          onRestart={restartGame}
+          onArtistSelect={switchToArtist}
+        />
+      )
+    }
     return (
       <Prize
-        score={gameState.score}
-        leaderboardScore={leaderboardScore}
-        avgTimeMs={avgTimeMs}
         level={level}
         gameName={getGameName(gameMode)}
         onRestart={restartGame}
@@ -170,11 +179,17 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
       />
     )
   }
+
+  // ─── Game Over (vite esaurite) ────────────────────────────────────────────
   if (gameState.status === 'lost') {
     return (
       <GameOver
         score={gameState.score}
+        leaderboardScore={leaderboardScore}
+        avgTimeMs={avgTimeMs}
+        level={level}
         gameName={getGameName(gameMode)}
+        isVictory={false}
         onRestart={restartGame}
         onArtistSelect={switchToArtist}
       />
