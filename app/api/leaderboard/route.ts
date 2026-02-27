@@ -6,7 +6,7 @@ import { LEVELS } from '@/lib/levels'
 // ─── Whitelist valori validi ───────────────────────────────────────────────
 const VALID_LEVEL_IDS    = new Set(LEVELS.map(l => l.id))
 const VALID_LEVEL_NAMES  = new Set(LEVELS.map(l => l.name))
-const MAX_SCORE_POSSIBLE = Math.max(...LEVELS.map(l => l.winScore * l.multiplier * 2)) // ×2.0 max tempo
+const MAX_SCORE_POSSIBLE = Math.max(...LEVELS.map(l => l.winScore * l.multiplier * 3))
 
 // ─── Rate limiting in-memory ───────────────────────────────────────────────
 const rateMap = new Map<string, { count: number; resetAt: number }>()
