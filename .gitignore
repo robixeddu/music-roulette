@@ -5,6 +5,7 @@ out/
 .env*.local
 .vercel
 playwright-report/
+.jest-cache
 test-results/
 .DS_Store
 CONTEXT.md

@@ -1,0 +1,5 @@
+.provider {
+  min-height: 100dvh;
+  background-color: var(--bg-base);
+  transition: background-color 0.4s var(--ease-out);
+}

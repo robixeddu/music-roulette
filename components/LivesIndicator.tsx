@@ -1,19 +1,16 @@
 'use client'
 
 import { MAX_LIVES } from '@/lib/types'
+import styles from './LivesIndicator.module.css'
 
 interface LivesIndicatorProps {
   lives: number
 }
 
-/**
- * Mostra le vite rimaste come cuori.
- * Usa aria-label per screen reader: non solo i simboli visivi.
- */
 export function LivesIndicator({ lives }: LivesIndicatorProps) {
   return (
     <div
-      className="lives-indicator"
+      className={styles.indicator}
       role="status"
       aria-label={`Vite rimaste: ${lives} su ${MAX_LIVES}`}
       aria-live="polite"
@@ -21,7 +18,7 @@ export function LivesIndicator({ lives }: LivesIndicatorProps) {
       {Array.from({ length: MAX_LIVES }).map((_, i) => (
         <span
           key={i}
-          className={`heart ${i < lives ? 'heart--active' : 'heart--lost'}`}
+          className={`${styles.heart} ${i < lives ? styles.heartActive : styles.heartLost}`}
           aria-hidden="true"
         >
           {i < lives ? '♥' : '♡'}

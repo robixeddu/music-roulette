@@ -1,21 +1,13 @@
-/**
- * Skeleton di caricamento mostrato come fallback di Suspense.
- * Nessun 'use client' — è un RSC puro, zero JS.
- * Usa aria-busy per comunicare lo stato di caricamento.
- */
+import styles from './GameSkeleton.module.css'
+
 export function GameSkeleton() {
   return (
-    <div className="game-skeleton" aria-busy="true" aria-label="Caricamento prossima canzone...">
-      {/* Album cover placeholder */}
-      <div className="skeleton skeleton--cover" />
-
-      {/* Player placeholder */}
-      <div className="skeleton skeleton--player" />
-
-      {/* Opzioni placeholder */}
-      <div className="skeleton-choices">
+    <div className={styles.skeleton} aria-busy="true" aria-label="Caricamento prossima canzone...">
+      <div className={`${styles.bone} ${styles.cover}`} />
+      <div className={`${styles.bone} ${styles.player}`} />
+      <div className={styles.choices}>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="skeleton skeleton--choice" />
+          <div key={i} className={`${styles.bone} ${styles.choice}`} />
         ))}
       </div>
     </div>

@@ -13,6 +13,7 @@ import { GameOver } from './GameOver'
 import { GameSkeleton } from './GameSkeleton'
 import { GameError } from './GameError'
 import { ErrorBoundary } from './ErrorBoundary'
+import styles from './GameController.module.css'
 
 export type GameMode =
   | { type: 'genre'; genreId: string }
@@ -20,14 +21,9 @@ export type GameMode =
 
 function fetchQuestion(mode: GameMode, usedIds: Set<number>): Promise<TrackQuestion> {
   const params = new URLSearchParams()
-  if (mode.type === 'artist') {
-    params.set('artistName', mode.artistName)
-  } else {
-    params.set('genreId', mode.genreId)
-  }
-  if (usedIds.size > 0) {
-    params.set('usedIds', Array.from(usedIds).join(','))
-  }
+  if (mode.type === 'artist') params.set('artistName', mode.artistName)
+  else params.set('genreId', mode.genreId)
+  if (usedIds.size > 0) params.set('usedIds', Array.from(usedIds).join(','))
   return fetch(`/api/track?${params}`, { cache: 'no-store' }).then(res => {
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     return res.json()
@@ -45,37 +41,28 @@ interface GameControllerProps {
 
 export function GameController({ firstQuestionPromise, gameMode: initialMode }: GameControllerProps) {
   const router = useRouter()
-  const [gameMode, setGameMode] = useState<GameMode>(initialMode)
-  const [gameState, setGameState] = useState<GameState>(makeInitialState())
+  const [gameMode, setGameMode]     = useState<GameMode>(initialMode)
+  const [gameState, setGameState]   = useState<GameState>(makeInitialState())
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [questionPromise, setQuestionPromise] = useState(firstQuestionPromise)
-
-  // Livello corrente — caricato da localStorage lato client
   const [level, setLevel] = useState<Level>({ id: 1, name: 'Rookie', winScore: 5, multiplier: 1 })
+
   useEffect(() => { setLevel(loadLevel()) }, [])
 
-  const usedIdsRef          = useRef<Set<number>>(new Set())
-  const questionPromiseRef  = useRef<Promise<TrackQuestion>>(firstQuestionPromise)
+  const usedIdsRef         = useRef<Set<number>>(new Set())
+  const questionPromiseRef = useRef<Promise<TrackQuestion>>(firstQuestionPromise)
+  const playStartRef       = useRef<number | null>(null)
+  const timeSamplesRef     = useRef<number[]>([])
 
-  // ─── Timer risposta ───────────────────────────────────────────────────────
-  const playStartRef   = useRef<number | null>(null)
-  const timeSamplesRef = useRef<number[]>([])
-
-  const handleFirstPlay = useCallback(() => {
-    playStartRef.current = Date.now()
-  }, [])
+  const handleFirstPlay = useCallback(() => { playStartRef.current = Date.now() }, [])
 
   const getAvgTimeMs = useCallback((): number | null => {
-    const samples = timeSamplesRef.current
-    if (samples.length === 0) return null
-    return Math.round(samples.reduce((a, b) => a + b, 0) / samples.length)
+    const s = timeSamplesRef.current
+    if (s.length === 0) return null
+    return Math.round(s.reduce((a, b) => a + b, 0) / s.length)
   }, [])
 
-  const resetTimer = useCallback(() => {
-    playStartRef.current = null
-  }, [])
-
-  // ─── Navigazione domande ──────────────────────────────────────────────────
+  const resetTimer = useCallback(() => { playStartRef.current = null }, [])
 
   const nextQuestion = useCallback((mode: GameMode) => {
     setSelectedId(null)
@@ -110,101 +97,72 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     setQuestionPromise(p)
   }, [router])
 
-  // Avanza livello dopo vittoria — non resetta timeSamples (accumulo su tutta la sessione)
   const advanceLevel = useCallback(() => {
     const next = getNextLevel(level)
-    if (next) {
-      saveLevel(next)
-      setLevel(next)
-    }
+    if (next) { saveLevel(next); setLevel(next) }
   }, [level])
 
-  // ─── Selezione risposta ───────────────────────────────────────────────────
-
-  const handleSelect = useCallback(
-    (option: TrackOption) => {
-      if (selectedId !== null) return
-      setSelectedId(option.id)
-
-      // Campiona il tempo solo per risposte corrette con play avviato
-      if (option.isCorrect && playStartRef.current !== null) {
-        const elapsed = Date.now() - playStartRef.current
-        timeSamplesRef.current.push(elapsed)
+  const handleSelect = useCallback((option: TrackOption) => {
+    if (selectedId !== null) return
+    setSelectedId(option.id)
+    if (option.isCorrect && playStartRef.current !== null)
+      timeSamplesRef.current.push(Date.now() - playStartRef.current)
+    setGameState(prev => {
+      const newState = applyGuess(prev, option.isCorrect, level.winScore)
+      if (newState.status === 'playing') {
+        setTimeout(() => {
+          questionPromiseRef.current.then(q => {
+            q.options.forEach(o => usedIdsRef.current.add(o.id))
+            nextQuestion(gameMode)
+          })
+        }, 1500)
       }
-
-      setGameState(prev => {
-        const newState = applyGuess(prev, option.isCorrect, level.winScore)
-        if (newState.status === 'playing') {
-          setTimeout(() => {
-            questionPromiseRef.current.then(q => {
-              q.options.forEach(o => usedIdsRef.current.add(o.id))
-              nextQuestion(gameMode)
-            })
-          }, 1500)
-        }
-        return newState
-      })
-    },
-    [selectedId, nextQuestion, gameMode, level.winScore]
-  )
+      return newState
+    })
+  }, [selectedId, nextQuestion, gameMode, level.winScore])
 
   const avgTimeMs = getAvgTimeMs()
   const leaderboardScore = calcLeaderboardScore(gameState.score, level, avgTimeMs)
 
-  // ─── Vittoria livello ─────────────────────────────────────────────────────
-  // Se è l'ultimo livello (Master) → GameOver con form salvataggio
-  // Altrimenti → Prize con avanzamento al livello successivo
   if (gameState.status === 'won') {
     if (level.id >= MAX_LEVEL) {
       return (
         <GameOver
-          score={gameState.score}
-          leaderboardScore={leaderboardScore}
-          avgTimeMs={avgTimeMs}
-          level={level}
-          gameName={getGameName(gameMode)}
-          isVictory={true}
-          onRestart={restartGame}
-          onArtistSelect={switchToArtist}
+          score={gameState.score} leaderboardScore={leaderboardScore}
+          avgTimeMs={avgTimeMs} level={level}
+          gameName={getGameName(gameMode)} isVictory={true}
+          onRestart={restartGame} onArtistSelect={switchToArtist}
         />
       )
     }
     return (
       <Prize
-        level={level}
-        gameName={getGameName(gameMode)}
-        onRestart={restartGame}
-        onArtistSelect={switchToArtist}
-        onAdvanceLevel={advanceLevel}
+        level={level} gameName={getGameName(gameMode)}
+        onRestart={restartGame} onArtistSelect={switchToArtist} onAdvanceLevel={advanceLevel}
       />
     )
   }
 
-  // ─── Game Over (vite esaurite) ────────────────────────────────────────────
   if (gameState.status === 'lost') {
     return (
       <GameOver
-        score={gameState.score}
-        leaderboardScore={leaderboardScore}
-        avgTimeMs={avgTimeMs}
-        level={level}
-        gameName={getGameName(gameMode)}
-        isVictory={false}
-        onRestart={restartGame}
-        onArtistSelect={switchToArtist}
+        score={gameState.score} leaderboardScore={leaderboardScore}
+        avgTimeMs={avgTimeMs} level={level}
+        gameName={getGameName(gameMode)} isVictory={false}
+        onRestart={restartGame} onArtistSelect={switchToArtist}
       />
     )
   }
 
   return (
-    <div className="game-board">
-      <header className="game-board__header">
+    <div className={styles.board}>
+      <header className={styles.header}>
         <LivesIndicator lives={gameState.lives} />
-        <div className="game-board__level" aria-label={`Livello: ${level.name}`}>
-          <span aria-hidden="true" className="game-board__level-name">{level.name}</span>
+        <div className={styles.levelBadge} aria-label={`Livello: ${level.name}`}>
+          <span aria-hidden="true">{level.name}</span>
         </div>
         <div
-          className="game-board__score"
+          className={styles.score}
           aria-label={`Punteggio: ${formatScore(gameState.score, level.winScore)}`}
         >
           <span aria-hidden="true">🎯 {formatScore(gameState.score, level.winScore)}</span>
@@ -213,14 +171,12 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
 
       <ErrorBoundary
         fallback={({ reset }) => (
-          <GameError
-            onRetry={() => {
-              reset()
-              const p = fetchQuestion(gameMode, usedIdsRef.current)
-              questionPromiseRef.current = p
-              setQuestionPromise(p)
-            }}
-          />
+          <GameError onRetry={() => {
+            reset()
+            const p = fetchQuestion(gameMode, usedIdsRef.current)
+            questionPromiseRef.current = p
+            setQuestionPromise(p)
+          }} />
         )}
       >
         <Suspense fallback={<GameSkeleton />}>

@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getTimeMultiplierLabel } from '@/lib/levels'
 import type { Level } from '@/lib/levels'
 import { RetryButtons } from './RetryButtons'
+import styles from './GameOver.module.css'
+import btnStyles from './Btn.module.css'
 
 interface GameOverProps {
   score: number
@@ -11,7 +13,6 @@ interface GameOverProps {
   avgTimeMs: number | null
   level: Level
   gameName: string
-  /** true = ha completato Master, false = vite esaurite */
   isVictory: boolean
   onRestart: () => void
   onArtistSelect: (artistName: string) => void
@@ -20,18 +21,26 @@ interface GameOverProps {
 type SubmitState = 'idle' | 'loading' | 'success' | 'error'
 
 export function GameOver({
-  score,
-  leaderboardScore,
-  avgTimeMs,
-  level,
-  gameName,
-  isVictory,
-  onRestart,
-  onArtistSelect,
+  score, leaderboardScore, avgTimeMs, level, gameName, isVictory, onRestart, onArtistSelect,
 }: GameOverProps) {
-  const [nickname, setNickname] = useState('')
-  const [submitState, setSubmitState] = useState<SubmitState>('idle')
+  const [modalOpen, setModalOpen]         = useState(false)
+  const [nickname, setNickname]           = useState('')
+  const [submitState, setSubmitState]     = useState<SubmitState>('idle')
   const [savedNickname, setSavedNickname] = useState('')
+
+  // Apre il modal automaticamente se lo score entra nella top 50
+  useEffect(() => {
+    if (score === 0) return
+    fetch(`/api/leaderboard?check=${leaderboardScore}`)
+      .then(r => r.json())
+      .then(data => { if (data.eligible) setModalOpen(true) })
+      .catch(() => {}) // silenzioso — il modal non si apre in caso di errore
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const closeModal = () => {
+    if (submitState === 'loading') return
+    setModalOpen(false)
+  }
 
   const handleSubmit = async () => {
     const clean = nickname.trim().slice(0, 12)
@@ -42,17 +51,20 @@ export function GameOver({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          nickname: clean,
-          score: leaderboardScore,
-          level: level.id,
-          level_name: level.name,
-          genre: gameName,
-          avg_time_ms: avgTimeMs,
+          nickname: clean, score: leaderboardScore,
+          level: level.id, level_name: level.name,
+          genre: gameName, avg_time_ms: avgTimeMs,
         }),
       })
       if (!res.ok) throw new Error()
-      setSavedNickname(clean.toUpperCase())
-      setSubmitState('success')
+      const data = await res.json()
+      if (data.eligible === false) {
+        // Qualcuno ha scalzato lo score nel frattempo
+        setModalOpen(false)
+      } else {
+        setSavedNickname(clean.toUpperCase())
+        setSubmitState('success')
+      }
     } catch {
       setSubmitState('error')
     }
@@ -61,97 +73,105 @@ export function GameOver({
   const avgTimeSec = avgTimeMs !== null ? (avgTimeMs / 1000).toFixed(1) : null
 
   return (
-    <div
-      className="game-over"
-      role="status"
-      aria-live="assertive"
-      aria-label={isVictory ? 'Hai completato tutti i livelli!' : `Game over. ${score} risposte corrette.`}
-    >
-      <div className="game-over__emoji" aria-hidden="true">
-        {isVictory ? '👑' : '💀'}
+    <>
+      <div
+        className={styles.gameOver}
+        role="status"
+        aria-live="assertive"
+        aria-label={isVictory ? 'Hai completato tutti i livelli!' : `Game over. ${score} risposte corrette.`}
+      >
+        <div className={styles.emoji} aria-hidden="true">{isVictory ? '👑' : '💀'}</div>
+        <h2 className={styles.title}>{isVictory ? 'Hall of Fame!' : 'Game Over'}</h2>
+        <p className={styles.message}>
+          {isVictory
+            ? 'Hai completato tutti i livelli. Leggendario.'
+            : <><strong>{score}</strong> {score === 1 ? 'risposta corretta' : 'risposte corrette'}.</>
+          }
+        </p>
+
+        {score > 0 && (
+          <div className={styles.breakdown}>
+            <div className={styles.row}>
+              <span className={styles.rowLabel}>Livello raggiunto</span>
+              <span className={styles.rowValue}>{level.name} ×{level.multiplier}</span>
+            </div>
+            <div className={styles.row}>
+              <span className={styles.rowLabel}>Velocità media</span>
+              <span className={styles.rowValue}>
+                {getTimeMultiplierLabel(avgTimeMs)}
+                {avgTimeSec && <span className={styles.rowTime}> ({avgTimeSec}s)</span>}
+              </span>
+            </div>
+            <div className={`${styles.row} ${styles.rowTotal}`}>
+              <span className={styles.rowLabel}>Punteggio finale</span>
+              <span className={styles.scoreFinal}>{leaderboardScore}</span>
+            </div>
+          </div>
+        )}
+
+        <RetryButtons gameName={gameName} onRestart={onRestart} onArtistSelect={onArtistSelect} />
       </div>
 
-      <h2 className="game-over__title">
-        {isVictory ? 'Hall of Fame!' : 'Game Over'}
-      </h2>
+      {modalOpen && (
+        <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="Salva punteggio">
+          <div className={styles.modal}>
+            <button
+              type="button"
+              className={styles.modalClose}
+              onClick={closeModal}
+              aria-label="Chiudi"
+            >
+              ✕
+            </button>
 
-      <p className="game-over__message">
-        {isVictory
-          ? 'Hai completato tutti i livelli. Leggendario.'
-          : <>Hai totalizzato <strong>{score}</strong> {score === 1 ? 'risposta corretta' : 'risposte corrette'}.</>
-        }
-      </p>
-
-      {/* Breakdown punteggio */}
-      {score > 0 && (
-        <div className="game-over__score-breakdown">
-          <div className="game-over__score-row">
-            <span className="game-over__score-label">Livello raggiunto</span>
-            <span className="game-over__score-value">{level.name} ×{level.multiplier}</span>
-          </div>
-          <div className="game-over__score-row">
-            <span className="game-over__score-label">Velocità media</span>
-            <span className="game-over__score-value">
-              {getTimeMultiplierLabel(avgTimeMs)}
-              {avgTimeSec && <span className="game-over__score-time"> ({avgTimeSec}s)</span>}
-            </span>
-          </div>
-          <div className="game-over__score-row game-over__score-row--total">
-            <span className="game-over__score-label">Punteggio finale</span>
-            <span className="game-over__score-final">{leaderboardScore}</span>
+            {submitState === 'success' ? (
+              <div className={styles.saved}>
+                <span className={styles.savedIcon} aria-hidden="true">✓</span>
+                <p><strong>{savedNickname}</strong> salvato in classifica!</p>
+                <a href="/leaderboard" className={`${btnStyles.btn} ${btnStyles.primary}`}>
+                  Vedi classifica
+                </a>
+                <button type="button" className={btnStyles.btn} onClick={closeModal}>
+                  Chiudi
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className={styles.modalTitle}>🏆 Sei nella top 50!</p>
+                <p className={styles.modalScore}>{leaderboardScore} pt</p>
+                <p className={styles.nicknameLabel}>ENTER YOUR NAME</p>
+                <div className={styles.nicknameRow}>
+                  <input
+                    id="nickname-input"
+                    type="text"
+                    className={styles.nicknameInput}
+                    placeholder="_ _ _"
+                    value={nickname}
+                    onChange={e => setNickname(e.target.value.toUpperCase())}
+                    onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                    maxLength={12}
+                    autoComplete="off"
+                    style={{ fontSize: '16px' }}
+                    disabled={submitState === 'loading'}
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    className={`${btnStyles.btn} ${btnStyles.primary} ${styles.nicknameBtn}`}
+                    onClick={handleSubmit}
+                    disabled={!nickname.trim() || submitState === 'loading'}
+                  >
+                    {submitState === 'loading' ? '…' : '→'}
+                  </button>
+                </div>
+                {submitState === 'error' && (
+                  <p className={styles.nicknameError}>Errore nel salvataggio. Riprova.</p>
+                )}
+              </>
+            )}
           </div>
         </div>
       )}
-
-      {/* Form salvataggio — stile arcade "INSERT COIN" */}
-      {score > 0 && (
-        submitState === 'success' ? (
-          <div className="game-over__saved">
-            <span className="game-over__saved-icon" aria-hidden="true">✓</span>
-            <p><strong>{savedNickname}</strong> salvato in classifica!</p>
-            <a href="/leaderboard" className="btn btn--primary">
-              Vedi classifica
-            </a>
-          </div>
-        ) : (
-          <div className="game-over__nickname-form">
-            <p className="game-over__nickname-label">ENTER YOUR NAME</p>
-            <div className="game-over__nickname-row">
-              <input
-                id="nickname-input"
-                type="text"
-                className="game-over__nickname-input"
-                placeholder="_ _ _"
-                value={nickname}
-                onChange={e => setNickname(e.target.value.toUpperCase())}
-                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                maxLength={12}
-                autoComplete="off"
-                style={{ fontSize: '16px' }}
-                disabled={submitState === 'loading'}
-                autoFocus
-              />
-              <button
-                type="button"
-                className="btn btn--primary game-over__nickname-btn"
-                onClick={handleSubmit}
-                disabled={!nickname.trim() || submitState === 'loading'}
-              >
-                {submitState === 'loading' ? '…' : '→'}
-              </button>
-            </div>
-            {submitState === 'error' && (
-              <p className="game-over__nickname-error">Errore nel salvataggio. Riprova.</p>
-            )}
-          </div>
-        )
-      )}
-
-      <RetryButtons
-        gameName={gameName}
-        onRestart={onRestart}
-        onArtistSelect={onArtistSelect}
-      />
-    </div>
+    </>
   )
 }

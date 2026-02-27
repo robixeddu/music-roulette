@@ -1,72 +1,63 @@
 'use client'
 
 import type { TrackOption, GuessResult } from '@/lib/types'
+import styles from './ChoiceList.module.css'
 
 interface ChoiceListProps {
   options: TrackOption[]
-  /** null = nessuna risposta ancora; number = id dell'opzione scelta */
   selectedId: number | null
   result: GuessResult
   onSelect: (option: TrackOption) => void
   disabled: boolean
 }
 
-/**
- * Lista di opzioni di risposta.
- *
- * Accessibilità:
- * - role="radiogroup" con aria-label descrive il gruppo
- * - Ogni opzione è un <button> (non un <div>) → keyboard navigabile nativamente
- * - aria-pressed indica la selezione corrente
- * - aria-describedby connette l'esito visivo (corretto/sbagliato) al bottone
- * - Colore non è l'unico indicatore: ✓ e ✗ affiancano i colori
- */
 export function ChoiceList({ options, selectedId, result, onSelect, disabled }: ChoiceListProps) {
   return (
     <div
       role="radiogroup"
       aria-label="Scegli l'artista e il titolo della canzone"
-      className="choice-list"
+      className={styles.list}
     >
       {options.map((option) => {
-        const isSelected = selectedId === option.id
+        const isSelected  = selectedId === option.id
         const showFeedback = selectedId !== null
 
-        // Determina lo stato visivo del bottone
-        let state: 'idle' | 'correct' | 'wrong' | 'missed' = 'idle'
+        let state: 'idle' | 'correct' | 'wrong' = 'idle'
         if (showFeedback) {
-          if (option.isCorrect) state = 'correct'          // sempre evidenzia la corretta
-          else if (isSelected) state = 'wrong'             // sbagliata selezionata
+          if (option.isCorrect) state = 'correct'
+          else if (isSelected)  state = 'wrong'
         }
 
         const feedbackId = `feedback-${option.id}`
+        const btnClass = [
+          styles.btn,
+          state === 'correct' ? styles.correct : '',
+          state === 'wrong'   ? styles.wrong   : '',
+        ].filter(Boolean).join(' ')
 
         return (
           <button
             key={option.id}
             type="button"
-            className={`choice-btn choice-btn--${state}`}
+            className={btnClass}
             onClick={() => !disabled && onSelect(option)}
             disabled={disabled}
             aria-pressed={isSelected}
             aria-describedby={showFeedback ? feedbackId : undefined}
           >
-            <span className="choice-btn__label">{option.label}</span>
-            {/* Sempre nel DOM per riservare lo spazio — evita CLS quando appare */}
+            <span className={styles.label}>{option.label}</span>
             <span
               id={feedbackId}
-              className="choice-btn__feedback"
+              className={styles.feedback}
               aria-hidden={!showFeedback}
               aria-label={
-                state === 'correct'
-                  ? 'Risposta corretta'
-                  : state === 'wrong'
-                  ? 'Risposta sbagliata'
-                  : undefined
+                state === 'correct' ? 'Risposta corretta'
+                : state === 'wrong' ? 'Risposta sbagliata'
+                : undefined
               }
             >
               {state === 'correct' && '✓'}
-              {state === 'wrong' && '✗'}
+              {state === 'wrong'   && '✗'}
             </span>
           </button>
         )

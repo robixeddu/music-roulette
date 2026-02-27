@@ -1,21 +1,13 @@
+const nextJest = require('next/jest')
+
+const createJestConfig = nextJest({ dir: './' })
+
 /** @type {import('jest').Config} */
-const config = {
-  preset: 'ts-jest',
+const customConfig = {
   testEnvironment: 'jsdom',
-  setupFilesAfterFramework: ['<rootDir>/jest.setup.ts'],
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1',
-  },
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/e2e/'],
-  transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': ['babel-jest', {
-      presets: [
-        ['@babel/preset-env', { targets: { node: 'current' } }],
-        ['@babel/preset-react', { runtime: 'automatic' }],
-        '@babel/preset-typescript',
-      ],
-    }],
-  },
+  cacheDirectory: '<rootDir>/.jest-cache',
 }
 
-module.exports = config
+module.exports = createJestConfig(customConfig)

@@ -3,15 +3,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { AppNav } from '@/components/AppNav'
 import type { LeaderboardEntry } from '@/lib/types'
+import styles from './leaderboard.module.css'
+import btnStyles from '@/components/Btn.module.css'
 
-const POLL_INTERVAL = 12_000 // 12 secondi
+const POLL_INTERVAL = 12_000
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('it-IT', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-  })
+  return new Date(iso).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: '2-digit' })
 }
 
 function rankEmoji(rank: number): string {
@@ -36,8 +34,8 @@ function formatAvgTime(ms: number | null): string {
 }
 
 export default function LeaderboardPage() {
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([])
-  const [loading, setLoading] = useState(true)
+  const [entries, setEntries]         = useState<LeaderboardEntry[]>([])
+  const [loading, setLoading]         = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -59,87 +57,77 @@ export default function LeaderboardPage() {
     }
   }, [])
 
-  // Fetch iniziale
-  useEffect(() => {
-    fetchLeaderboard()
-  }, [fetchLeaderboard])
-
-  // Polling ogni 12s
+  useEffect(() => { fetchLeaderboard() }, [fetchLeaderboard])
   useEffect(() => {
     const id = setInterval(() => fetchLeaderboard(true), POLL_INTERVAL)
     return () => clearInterval(id)
   }, [fetchLeaderboard])
 
   return (
-    <div className="leaderboard-page">
+    <div className={styles.page}>
       <AppNav backHref="/" backLabel="Home" title="Music Roulette" />
 
-      <div className="leaderboard-content">
-        <header className="leaderboard-header">
-          <h1 className="leaderboard-title">🏆 Hall of Fame</h1>
-          <p className="leaderboard-subtitle">I migliori giocatori di Music Roulette</p>
+      <div className={styles.content}>
+        <header className={styles.header}>
+          <h1 className={styles.title}>🏆 Hall of Fame</h1>
+          <p className={styles.subtitle}>I migliori giocatori di Music Roulette</p>
           {lastUpdated && (
-            <p className="leaderboard-updated" aria-live="polite">
-              {isRefreshing ? '↻ aggiornamento…' : `aggiornato alle ${lastUpdated.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}
+            <p className={styles.updated} aria-live="polite">
+              {isRefreshing
+                ? '↻ aggiornamento…'
+                : `aggiornato alle ${lastUpdated.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+              }
             </p>
           )}
         </header>
 
         {loading ? (
-          <div className="leaderboard-loading" aria-label="Caricamento classifica">
+          <div className={styles.loading} aria-label="Caricamento classifica">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="leaderboard-entry leaderboard-entry--skeleton">
-                <div className="skeleton skeleton--rank" />
-                <div className="leaderboard-entry__info">
-                  <div className="skeleton skeleton--nickname" />
-                  <div className="skeleton skeleton--meta" />
+              <div key={i} className={`${styles.entry} ${styles.entrySkeleton}`}>
+                <div className={`${styles.bone} ${styles.boneRank}`} />
+                <div className={styles.info}>
+                  <div className={`${styles.bone} ${styles.boneNickname}`} />
+                  <div className={`${styles.bone} ${styles.boneMeta}`} />
                 </div>
-                <div className="leaderboard-entry__right">
-                  <div className="skeleton skeleton--score" />
-                  <div className="skeleton skeleton--time" />
-                </div>
+                <div className={`${styles.bone} ${styles.boneScore}`} />
+                <div className={`${styles.bone} ${styles.boneTime}`} />
               </div>
             ))}
           </div>
         ) : entries.length === 0 ? (
-          <div className="leaderboard-empty">
-            <p className="leaderboard-empty__text">
+          <div className={styles.empty}>
+            <p className={styles.emptyText}>
               Nessun punteggio ancora.<br />Sii il primo a entrare in classifica!
             </p>
-            <a href="/" className="btn btn--primary">Gioca ora</a>
+            <a href="/" className={`${btnStyles.btn} ${btnStyles.primary}`}>Gioca ora</a>
           </div>
         ) : (
           <>
-            {/* Header colonne */}
-            <div className="leaderboard-cols-header" aria-hidden="true">
-              <span className="leaderboard-cols-header__rank">#</span>
-              <span className="leaderboard-cols-header__player">Giocatore</span>
-              <span className="leaderboard-cols-header__score">Punti</span>
-              <span className="leaderboard-cols-header__time">Tempo avg</span>
+            <div className={styles.colsHeader} aria-hidden="true">
+              <span>#</span>
+              <span>Giocatore</span>
+              <span className={styles.colScore}>Punti</span>
+              <span className={styles.colTime}>Tempo avg</span>
             </div>
 
-            <ol className="leaderboard-list" aria-label="Classifica globale">
+            <ol className={styles.list} aria-label="Classifica globale">
               {entries.map((entry, i) => (
                 <li
                   key={entry.id}
-                  className={`leaderboard-entry ${i < 3 ? 'leaderboard-entry--podium' : ''}`}
+                  className={`${styles.entry} ${i < 3 ? styles.entryPodium : ''}`}
                 >
-                  <span className="leaderboard-entry__rank" aria-label={`Posizione ${i + 1}`}>
+                  <span className={styles.rank} aria-label={`Posizione ${i + 1}`}>
                     {rankEmoji(i + 1)}
                   </span>
-
-                  <div className="leaderboard-entry__info">
-                    <span className="leaderboard-entry__nickname">{entry.nickname}</span>
-                    <span className="leaderboard-entry__meta">
+                  <div className={styles.info}>
+                    <span className={styles.nickname}>{entry.nickname}</span>
+                    <span className={styles.meta}>
                       {levelEmoji(entry.level)} {entry.level_name} · {entry.genre} · {formatDate(entry.created_at)}
                     </span>
                   </div>
-
-                  <span className="leaderboard-entry__score">{entry.score}</span>
-
-                  <span className="leaderboard-entry__time">
-                    {formatAvgTime(entry.avg_time_ms)}
-                  </span>
+                  <span className={styles.score}>{entry.score}</span>
+                  <span className={styles.time}>{formatAvgTime(entry.avg_time_ms)}</span>
                 </li>
               ))}
             </ol>

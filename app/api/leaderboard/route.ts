@@ -34,9 +34,30 @@ function getIp(req: NextRequest): string {
 }
 
 /**
- * GET /api/leaderboard — top 50 punteggi
+ * GET /api/leaderboard         — top 50 punteggi
+ * GET /api/leaderboard?check=N — controlla se N entra nella top 50 (senza caricare tutto)
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const checkParam = searchParams.get('check')
+
+  if (checkParam !== null) {
+    const score = parseInt(checkParam, 10)
+    if (isNaN(score) || score < 0) {
+      return NextResponse.json({ error: 'Parametro non valido.' }, { status: 400 })
+    }
+    try {
+      const threshold = await sql`
+        SELECT score FROM scores ORDER BY score DESC LIMIT 1 OFFSET 49
+      ` as { score: number }[]
+      const eligible = threshold.length === 0 || score > threshold[0].score
+      return NextResponse.json({ eligible }, { headers: { 'Cache-Control': 'no-store' } })
+    } catch (error) {
+      console.error('[GET /api/leaderboard?check]', error)
+      return NextResponse.json({ error: 'Errore.' }, { status: 500 })
+    }
+  }
+
   try {
     const rows = await sql`
       SELECT id, nickname, score, level, level_name, genre, avg_time_ms, created_at
@@ -124,13 +145,22 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Controlla se lo score entra nella top 50 prima di inserire
+    const threshold = await sql`
+      SELECT score FROM scores ORDER BY score DESC LIMIT 1 OFFSET 49
+    ` as { score: number }[]
+
+    if (threshold.length > 0 && score <= threshold[0].score) {
+      return NextResponse.json({ eligible: false }, { status: 200 })
+    }
+
     const rows = await sql`
       INSERT INTO scores (nickname, score, level, level_name, genre, avg_time_ms)
       VALUES (${cleanNickname}, ${score}, ${level}, ${level_name}, ${cleanGenre}, ${cleanAvgTimeMs})
       RETURNING id, nickname, score, level, level_name, genre, avg_time_ms, created_at
     ` as LeaderboardEntry[]
 
-    return NextResponse.json(rows[0], { status: 201 })
+    return NextResponse.json({ eligible: true, entry: rows[0] }, { status: 201 })
   } catch (error) {
     console.error('[POST /api/leaderboard]', error)
     return NextResponse.json({ error: 'Errore nel salvataggio del punteggio.' }, { status: 500 })

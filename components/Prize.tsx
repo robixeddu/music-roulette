@@ -4,6 +4,8 @@ import { getPrize } from '@/lib/game-utils'
 import { getNextLevel } from '@/lib/levels'
 import type { Level } from '@/lib/levels'
 import { RetryButtons } from './RetryButtons'
+import styles from './Prize.module.css'
+import btnStyles from './Btn.module.css'
 
 interface PrizeProps {
   level: Level
@@ -13,44 +15,34 @@ interface PrizeProps {
   onAdvanceLevel: () => void
 }
 
-export function Prize({
-  level,
-  gameName,
-  onRestart,
-  onArtistSelect,
-  onAdvanceLevel,
-}: PrizeProps) {
+export function Prize({ level, gameName, onRestart, onArtistSelect, onAdvanceLevel }: PrizeProps) {
   const prize = getPrize(level.name)
   const nextLevel = getNextLevel(level)
 
-  const handleAdvance = () => {
-    onAdvanceLevel()
-    onRestart()
-  }
+  const handleAdvance = () => { onAdvanceLevel(); onRestart() }
 
   return (
     <div
-      className="prize"
+      className={styles.prize}
       role="status"
       aria-live="assertive"
       aria-label={`Livello completato! ${prize.message}`}
     >
-      <div className="prize__emoji" aria-hidden="true">{prize.emoji}</div>
-      <h2 className="prize__title">Livello completato!</h2>
-      <p className="prize__message">{prize.message}</p>
+      <div className={styles.emoji} aria-hidden="true">{prize.emoji}</div>
+      <h2 className={styles.title}>Livello completato!</h2>
+      <p className={styles.message}>{prize.message}</p>
 
       {nextLevel && (
-        <div className="prize__next-level">
-          <p className="prize__next-level-label">
+        <div className={styles.nextLevel}>
+          <p className={styles.nextLevelLabel}>
             Prossimo livello: <strong>{nextLevel.name}</strong>
-            <br />
-            <span className="prize__next-level-detail">
+            <span className={styles.nextLevelDetail}>
               {nextLevel.winScore} risposte · moltiplicatore ×{nextLevel.multiplier}
             </span>
           </p>
           <button
             type="button"
-            className="btn btn--primary btn--large"
+            className={`${btnStyles.btn} ${btnStyles.primary} ${btnStyles.large}`}
             onClick={handleAdvance}
             autoFocus
           >
@@ -59,11 +51,7 @@ export function Prize({
         </div>
       )}
 
-      <RetryButtons
-        gameName={gameName}
-        onRestart={onRestart}
-        onArtistSelect={onArtistSelect}
-      />
+      <RetryButtons gameName={gameName} onRestart={onRestart} onArtistSelect={onArtistSelect} />
     </div>
   )
 }

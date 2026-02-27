@@ -1,16 +1,16 @@
 'use client'
 
 import { use } from 'react'
+import Image from 'next/image'
 import type { TrackQuestion, TrackOption } from '@/lib/types'
 import { AudioPlayer } from './AudioPlayer'
 import { ChoiceList } from './ChoiceList'
-import Image from 'next/image'
+import styles from './QuestionView.module.css'
 
 interface QuestionViewProps {
   questionPromise: Promise<TrackQuestion>
   selectedId: number | null
   onSelect: (option: TrackOption) => void
-  /** Chiamato al primo play dell'audio — usato da GameController per avviare il timer */
   onFirstPlay?: () => void
 }
 
@@ -23,18 +23,22 @@ export function QuestionView({ questionPromise, selectedId, onSelect, onFirstPla
       ? 'correct'
       : 'wrong'
 
+  // La cover si svela quando l'utente ha risposto correttamente
+  // (sostituisce il selettore :has() cross-component che non è modulabile)
+  const coverRevealed = selectedId !== null && result === 'correct'
+
   return (
-    <div className="question-view">
-      <div className="game-board__cover-wrap">
+    <div className={styles.view}>
+      <div className={styles.coverWrap}>
         <Image
           src={question.albumCover}
           alt="Copertina album — prova a indovinare la canzone!"
           width={200}
           height={200}
-          className={`game-board__cover ${selectedId !== null ? 'game-board__cover--revealed' : ''}`}
+          className={`${styles.cover} ${coverRevealed ? styles.coverRevealed : ''}`}
           priority
         />
-        <div className="game-board__cover-overlay" aria-hidden="true" />
+        <div className={styles.coverOverlay} aria-hidden="true" />
       </div>
 
       <AudioPlayer src={question.previewUrl} onFirstPlay={onFirstPlay} />

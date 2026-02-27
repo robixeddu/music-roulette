@@ -1,0 +1,67 @@
+.prize {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  gap: 1rem;
+  animation: fadeScaleIn 0.5s var(--ease-out);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+@keyframes fadeScaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.emoji {
+  font-size: 4rem;
+  animation: bounce 0.6s var(--ease-out) 0.3s both;
+}
+
+@keyframes bounce {
+  0%   { transform: scale(0); }
+  60%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 6vw, 3rem);
+  font-weight: 800;
+}
+
+.message {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.nextLevel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-lg);
+}
+
+.nextLevelLabel {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.nextLevelDetail {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 400;
+  margin-top: 0.2rem;
+  letter-spacing: 0.02em;
+}

@@ -8,7 +8,7 @@ function makeTrack(id: number, artist = `Artist ${id}`, title = `Track ${id}`): 
     artistName: artist,
     collectionName: `Album ${id}`,
     previewUrl: `https://example.com/preview/${id}.mp3`,
-    artworkUrl100: `https://example.com/artwork/${id}.jpg`,
+    artworkUrl100: `https://example.com/artwork/100x100bb/${id}.jpg`,
     primaryGenreName: 'Pop',
   }
 }

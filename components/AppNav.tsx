@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import styles from './AppNav.module.css'
 
 interface AppNavProps {
   backHref: string
@@ -6,23 +7,13 @@ interface AppNavProps {
   title: string
 }
 
-/**
- * Barra di navigazione condivisa tra Genres e Game.
- * RSC puro — nessun 'use client'.
- */
 export function AppNav({ backHref, backLabel, title }: AppNavProps) {
   return (
-    <nav className="app-nav" aria-label="Navigazione principale">
-      <Link
-        href={backHref}
-        className="app-nav__back"
-        aria-label={`Torna a ${backLabel}`}
-      >
+    <nav className={styles.nav}>
+      <Link href={backHref} className={styles.back}>
         ← {backLabel}
       </Link>
-      <span className="app-nav__title" aria-hidden="true">
-        {title}
-      </span>
+      <span className={styles.title}>{title}</span>
     </nav>
   )
 }
