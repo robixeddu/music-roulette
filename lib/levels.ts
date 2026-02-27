@@ -39,27 +39,37 @@ export function getNextLevel(current: Level): Level | null {
  * < 20s → ×1.0  (risposta normale)
  * ≥ 20s → ×0.5  (risposta lenta)
  */
+/**
+ * Moltiplicatore tempo CONTINUO — nessuno scaglione.
+ * Decresce linearmente: max(0.5, 3.0 − (s / 30) × 2.5)
+ *
+ *  0s   → ×3.00
+ *  5s   → ×2.58
+ * 10s   → ×2.17
+ * 20s   → ×1.33
+ * 30s+  → ×0.50 (cap minimo)
+ * null  → ×1.00 (nessun play)
+ *
+ * Ogni decimo di secondo produce un punteggio diverso → nessuna parità accidentale.
+ */
 export function getTimeMultiplier(avgTimeMs: number | null): number {
   if (avgTimeMs === null) return 1.0
   const s = avgTimeMs / 1000
-  if (s < 5)  return 2.0
-  if (s < 10) return 1.5
-  if (s < 20) return 1.0
-  return 0.5
+  return Math.max(0.5, 3.0 - (s / 30) * 2.5)
 }
 
-/** Label leggibile per il moltiplicatore tempo. */
+/** Label velocità per UI — icona indicativa + moltiplicatore esatto. */
 export function getTimeMultiplierLabel(avgTimeMs: number | null): string {
+  if (avgTimeMs === null) return '— ×1.00'
+  const s = avgTimeMs / 1000
   const m = getTimeMultiplier(avgTimeMs)
-  if (m === 2.0) return '⚡ ×2.0'
-  if (m === 1.5) return '🔥 ×1.5'
-  if (m === 1.0) return '✓ ×1.0'
-  return '🐢 ×0.5'
+  const icon = s < 5 ? '⚡' : s < 10 ? '🔥' : s < 20 ? '✓' : '🐢'
+  return `${icon} ×${m.toFixed(2)}`
 }
 
 /**
  * Calcola il punteggio classifica finale.
- * score = round(domande_vinte × moltiplicatore_livello × moltiplicatore_tempo)
+ * score = round(domande_vinte × moltiplicatore_livello × moltiplicatore_tempo_continuo)
  */
 export function calcLeaderboardScore(
   wonQuestions: number,
