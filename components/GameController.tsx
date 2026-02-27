@@ -34,6 +34,41 @@ function getGameName(mode: GameMode): string {
   return mode.type === 'artist' ? mode.artistName : mode.genreId
 }
 
+// ─── Suoni feedback via Web Audio API ────────────────────────────────────────
+
+function playFeedbackSound(correct: boolean) {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    const ctx = new AudioCtx()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    if (correct) {
+      osc.frequency.setValueAtTime(520, ctx.currentTime)
+      osc.frequency.setValueAtTime(780, ctx.currentTime + 0.1)
+      gain.gain.setValueAtTime(0.18, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35)
+      osc.start(ctx.currentTime)
+      osc.stop(ctx.currentTime + 0.35)
+    } else {
+      osc.frequency.setValueAtTime(300, ctx.currentTime)
+      osc.frequency.setValueAtTime(180, ctx.currentTime + 0.15)
+      gain.gain.setValueAtTime(0.18, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+      osc.start(ctx.currentTime)
+      osc.stop(ctx.currentTime + 0.3)
+    }
+
+    osc.onended = () => ctx.close()
+  } catch {
+    // Web Audio non disponibile — silenzioso
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface GameControllerProps {
   firstQuestionPromise: Promise<TrackQuestion>
   gameMode: GameMode
@@ -45,7 +80,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
   const [gameState, setGameState]   = useState<GameState>(makeInitialState())
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [questionPromise, setQuestionPromise] = useState(firstQuestionPromise)
-  const [level, setLevel] = useState<Level>({ id: 1, name: 'Rookie', winScore: 5, multiplier: 1 })
+  const [level, setLevel] = useState<Level>({ id: 1, name: 'Rookie', winScore: 5, multiplier: 1, feedbackDelayMs: 1500 })
 
   useEffect(() => { setLevel(loadLevel()) }, [])
 
@@ -53,6 +88,11 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
   const questionPromiseRef = useRef<Promise<TrackQuestion>>(firstQuestionPromise)
   const playStartRef       = useRef<number | null>(null)
   const timeSamplesRef     = useRef<number[]>([])
+  // Prefetch: la prossima domanda viene fetchata subito al click, non dopo il delay
+  const prefetchRef        = useRef<Promise<TrackQuestion> | null>(null)
+  // Congela il livello al momento della vittoria — evita che onAdvanceLevel()
+  // cambi level.id e triggeri GameOver al posto di Prize
+  const wonLevelRef        = useRef<Level>(level)
 
   const handleFirstPlay = useCallback(() => { playStartRef.current = Date.now() }, [])
 
@@ -67,7 +107,9 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
   const nextQuestion = useCallback((mode: GameMode) => {
     setSelectedId(null)
     resetTimer()
-    const p = fetchQuestion(mode, usedIdsRef.current)
+    // Usa il prefetch se già disponibile, altrimenti fetcha ora
+    const p = prefetchRef.current ?? fetchQuestion(mode, usedIdsRef.current)
+    prefetchRef.current = null
     questionPromiseRef.current = p
     setQuestionPromise(p)
   }, [resetTimer])
@@ -76,6 +118,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     usedIdsRef.current = new Set()
     timeSamplesRef.current = []
     playStartRef.current = null
+    prefetchRef.current = null
     setGameState(makeInitialState())
     setSelectedId(null)
     const p = fetchQuestion(gameMode, usedIdsRef.current)
@@ -89,6 +132,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     usedIdsRef.current = new Set()
     timeSamplesRef.current = []
     playStartRef.current = null
+    prefetchRef.current = null
     setGameMode(newMode)
     setGameState(makeInitialState())
     setSelectedId(null)
@@ -105,27 +149,32 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
   const handleSelect = useCallback((option: TrackOption) => {
     if (selectedId !== null) return
     setSelectedId(option.id)
+
     if (option.isCorrect && playStartRef.current !== null)
       timeSamplesRef.current.push(Date.now() - playStartRef.current)
-    setGameState(prev => {
-      const newState = applyGuess(prev, option.isCorrect, level.winScore)
-      if (newState.status === 'playing') {
-        setTimeout(() => {
-          questionPromiseRef.current.then(q => {
-            q.options.forEach(o => usedIdsRef.current.add(o.id))
-            nextQuestion(gameMode)
-          })
-        }, 1500)
-      }
-      return newState
-    })
-  }, [selectedId, nextQuestion, gameMode, level.winScore])
+
+    playFeedbackSound(option.isCorrect)
+
+    const newState = applyGuess(gameState, option.isCorrect, level.winScore)
+    if (newState.status === 'won') wonLevelRef.current = level
+    setGameState(newState)
+
+    if (newState.status === 'playing') {
+      // Prefetch immediato — in parallelo al delay visivo del feedback
+      questionPromiseRef.current.then(q => {
+        q.options.forEach(o => usedIdsRef.current.add(o.id))
+        prefetchRef.current = fetchQuestion(gameMode, usedIdsRef.current)
+      })
+
+      setTimeout(() => nextQuestion(gameMode), level.feedbackDelayMs)
+    }
+  }, [selectedId, gameState, nextQuestion, gameMode, level])
 
   const avgTimeMs = getAvgTimeMs()
   const leaderboardScore = calcLeaderboardScore(gameState.score, level, avgTimeMs)
 
   if (gameState.status === 'won') {
-    if (level.id >= MAX_LEVEL) {
+    if (wonLevelRef.current.id >= MAX_LEVEL) {
       return (
         <GameOver
           score={gameState.score} leaderboardScore={leaderboardScore}
@@ -173,6 +222,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
         fallback={({ reset }) => (
           <GameError onRetry={() => {
             reset()
+            prefetchRef.current = null
             const p = fetchQuestion(gameMode, usedIdsRef.current)
             questionPromiseRef.current = p
             setQuestionPromise(p)

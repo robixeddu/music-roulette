@@ -27,6 +27,12 @@
   transition: filter 0.5s var(--ease-out);
 }
 
+/* Cover svelata con tinta rossa se la risposta era sbagliata */
+.coverWrong {
+  filter: blur(0) brightness(0.7) saturate(0.4) sepia(0.4) hue-rotate(320deg) !important;
+  transition: filter 0.5s var(--ease-out);
+}
+
 .coverOverlay {
   position: absolute;
   inset: 0;

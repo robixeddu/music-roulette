@@ -28,13 +28,15 @@ export function GameOver({
   const [submitState, setSubmitState]     = useState<SubmitState>('idle')
   const [savedNickname, setSavedNickname] = useState('')
 
-  // Apre il modal automaticamente se lo score entra nella top 50
+  // Apre il modal solo su game over (lost) — la vittoria Master apre il modal manualmente
   useEffect(() => {
-    if (score === 0) return
-    fetch(`/api/leaderboard?check=${leaderboardScore}`)
+    if (isVictory || score === 0) return
+    const controller = new AbortController()
+    fetch(`/api/leaderboard?check=${leaderboardScore}`, { signal: controller.signal })
       .then(r => r.json())
-      .then(data => { if (data.eligible) setModalOpen(true) })
-      .catch(() => {}) // silenzioso — il modal non si apre in caso di errore
+      .then(data => { if (data.eligible !== false) setModalOpen(true) })
+      .catch(err => { if (err.name !== 'AbortError') setModalOpen(true) })
+    return () => controller.abort()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const closeModal = () => {
@@ -107,6 +109,16 @@ export function GameOver({
               <span className={styles.scoreFinal}>{leaderboardScore}</span>
             </div>
           </div>
+        )}
+
+        {isVictory && score > 0 && submitState !== 'success' && (
+          <button
+            type="button"
+            className={`${btnStyles.btn} ${btnStyles.primary}`}
+            onClick={() => setModalOpen(true)}
+          >
+            🏆 Salva punteggio
+          </button>
         )}
 
         <RetryButtons gameName={gameName} onRestart={onRestart} onArtistSelect={onArtistSelect} />

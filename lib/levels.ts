@@ -7,15 +7,16 @@
 export interface Level {
   id: number
   name: string
-  winScore: number   // domande da vincere per completare il livello
-  multiplier: number // moltiplicatore per il punteggio classifica
+  winScore: number        // domande da vincere per completare il livello
+  multiplier: number      // moltiplicatore per il punteggio classifica
+  feedbackDelayMs: number // ms di pausa tra risposta e domanda successiva
 }
 
 export const LEVELS: Level[] = [
-  { id: 1, name: 'Rookie',  winScore: 5,  multiplier: 1 },
-  { id: 2, name: 'Arcade',  winScore: 8,  multiplier: 2 },
-  { id: 3, name: 'Expert',  winScore: 12, multiplier: 3 },
-  { id: 4, name: 'Master',  winScore: 15, multiplier: 5 },
+  { id: 1, name: 'Rookie',  winScore: 5,  multiplier: 1, feedbackDelayMs: 1500 },
+  { id: 2, name: 'Arcade',  winScore: 8,  multiplier: 2, feedbackDelayMs: 1200 },
+  { id: 3, name: 'Expert',  winScore: 12, multiplier: 3, feedbackDelayMs: 1000 },
+  { id: 4, name: 'Master',  winScore: 15, multiplier: 5, feedbackDelayMs: 800  },
 ]
 
 export const MAX_LEVEL = LEVELS.length

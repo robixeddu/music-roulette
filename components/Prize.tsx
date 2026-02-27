@@ -1,11 +1,11 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { getPrize } from '@/lib/game-utils'
 import { getNextLevel } from '@/lib/levels'
 import type { Level } from '@/lib/levels'
 import { RetryButtons } from './RetryButtons'
 import styles from './Prize.module.css'
-import btnStyles from './Btn.module.css'
 
 interface PrizeProps {
   level: Level
@@ -16,10 +16,17 @@ interface PrizeProps {
 }
 
 export function Prize({ level, gameName, onRestart, onArtistSelect, onAdvanceLevel }: PrizeProps) {
-  const prize = getPrize(level.name)
+  const prize     = getPrize(level.name)
   const nextLevel = getNextLevel(level)
+  const firedRef  = useRef(false)
 
-  const handleAdvance = () => { onAdvanceLevel(); onRestart() }
+  // Avanza il livello subito — in background, senza toccare la UI
+  useEffect(() => {
+    if (nextLevel && !firedRef.current) {
+      firedRef.current = true
+      onAdvanceLevel()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div
@@ -40,14 +47,6 @@ export function Prize({ level, gameName, onRestart, onArtistSelect, onAdvanceLev
               {nextLevel.winScore} risposte · moltiplicatore ×{nextLevel.multiplier}
             </span>
           </p>
-          <button
-            type="button"
-            className={`${btnStyles.btn} ${btnStyles.primary} ${btnStyles.large}`}
-            onClick={handleAdvance}
-            autoFocus
-          >
-            Vai al livello {nextLevel.name} →
-          </button>
         </div>
       )}
 

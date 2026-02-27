@@ -19,7 +19,7 @@ export function ChoiceList({ options, selectedId, result, onSelect, disabled }: 
       className={styles.list}
     >
       {options.map((option) => {
-        const isSelected  = selectedId === option.id
+        const isSelected   = selectedId === option.id
         const showFeedback = selectedId !== null
 
         let state: 'idle' | 'correct' | 'wrong' = 'idle'
@@ -28,7 +28,9 @@ export function ChoiceList({ options, selectedId, result, onSelect, disabled }: 
           else if (isSelected)  state = 'wrong'
         }
 
-        const feedbackId = `feedback-${option.id}`
+        // Quando si sbaglia: evidenzia la risposta corretta con label "Era:"
+        const isCorrectAfterWrong = showFeedback && result === 'wrong' && option.isCorrect
+
         const btnClass = [
           styles.btn,
           state === 'correct' ? styles.correct : '',
@@ -40,23 +42,21 @@ export function ChoiceList({ options, selectedId, result, onSelect, disabled }: 
             key={option.id}
             type="button"
             className={btnClass}
-            onClick={() => !disabled && onSelect(option)}
+            onClick={() => onSelect(option)}
             disabled={disabled}
             aria-pressed={isSelected}
-            aria-describedby={showFeedback ? feedbackId : undefined}
           >
-            <span className={styles.label}>{option.label}</span>
-            <span
-              id={feedbackId}
-              className={styles.feedback}
-              aria-hidden={!showFeedback}
-              aria-label={
-                state === 'correct' ? 'Risposta corretta'
-                : state === 'wrong' ? 'Risposta sbagliata'
-                : undefined
-              }
-            >
+            <span className={styles.label}>
+              {isCorrectAfterWrong && (
+                <span className={styles.wasCorrectHint}>ERA: </span>
+              )}
+              {option.label}
             </span>
+            {showFeedback && (
+              <span className="sr-only">
+                {state === 'correct' ? 'Risposta corretta' : state === 'wrong' ? 'Risposta sbagliata' : ''}
+              </span>
+            )}
           </button>
         )
       })}

@@ -1,18 +1,23 @@
 'use client'
 
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback, type RefObject } from 'react'
 import styles from './AudioPlayer.module.css'
 
 interface AudioPlayerProps {
   src: string
   onFirstPlay?: () => void
   fadeOutSeconds?: number
+  playBtnRef?: RefObject<HTMLButtonElement | null>
+  autoplay?: boolean
 }
 
 type LoadState = 'loading' | 'ready' | 'error'
 
-export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4 }: AudioPlayerProps) {
+export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4, playBtnRef, autoplay = false }: AudioPlayerProps) {
   const audioRef      = useRef<HTMLAudioElement>(null)
+  const internalBtnRef = useRef<HTMLButtonElement>(null)
+  const btnRef = playBtnRef ?? internalBtnRef
+
   const [isPlaying, setIsPlaying]   = useState(false)
   const [loadState, setLoadState]   = useState<LoadState>('loading')
   const [progress, setProgress]     = useState(0)
@@ -31,6 +36,25 @@ export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4 }: AudioPlaye
   }, [src])
 
   useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
+
+  // Autoplay: tenta play() appena l'audio è pronto
+  useEffect(() => {
+    if (!autoplay) return
+    const audio = audioRef.current
+    if (!audio) return
+    const tryPlay = () => {
+      audio.volume = 1
+      audio.play().then(() => {
+        if (!hasPlayedRef.current) { hasPlayedRef.current = true; onFirstPlay?.() }
+      }).catch(() => {
+        // Autoplay bloccato dal browser (policy utente) — silenzioso
+      })
+    }
+    if (loadState === 'ready') { tryPlay(); return }
+    audio.addEventListener('canplay', tryPlay, { once: true })
+    return () => audio.removeEventListener('canplay', tryPlay)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoplay, src])
 
   const startFadeLoop = useCallback(() => {
     const loop = () => {
@@ -115,6 +139,7 @@ export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4 }: AudioPlaye
         onEnded={handleEnded} onError={handleError}
       />
       <button
+        ref={btnRef}
         className={`${styles.btn} ${isDisabled ? styles.btnDisabled : ''}`}
         onClick={togglePlay} onKeyDown={handleKeyDown}
         aria-label={btnLabel} aria-pressed={isPlaying}
