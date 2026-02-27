@@ -122,7 +122,7 @@
 .nicknameRow {
   display: flex;
   gap: 0.5rem;
-  width: 100%;
+  /* width: 100%; */
 }
 
 .nicknameInput {
@@ -177,6 +177,10 @@
   gap: 1rem;
   color: var(--correct);
   margin-top: 0.5rem;
+  p {
+    margin-bottom: 1rem;
+  
+  }
 }
 
 .savedIcon { font-size: 1.5rem; }

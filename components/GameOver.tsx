@@ -126,14 +126,10 @@ export function GameOver({
 
             {submitState === 'success' ? (
               <div className={styles.saved}>
-                <span className={styles.savedIcon} aria-hidden="true">✓</span>
                 <p><strong>{savedNickname}</strong> salvato in classifica!</p>
                 <a href="/leaderboard" className={`${btnStyles.btn} ${btnStyles.primary}`}>
                   Vedi classifica
                 </a>
-                <button type="button" className={btnStyles.btn} onClick={closeModal}>
-                  Chiudi
-                </button>
               </div>
             ) : (
               <>

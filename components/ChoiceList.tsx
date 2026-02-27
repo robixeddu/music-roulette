@@ -56,8 +56,6 @@ export function ChoiceList({ options, selectedId, result, onSelect, disabled }: 
                 : undefined
               }
             >
-              {state === 'correct' && '✓'}
-              {state === 'wrong'   && '✗'}
             </span>
           </button>
         )
