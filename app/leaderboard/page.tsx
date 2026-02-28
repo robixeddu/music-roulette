@@ -3,10 +3,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import { AppNav } from '@/components/AppNav'
 import type { LeaderboardEntry } from '@/lib/types'
+import { GENRES } from '@/lib/genres'
 import styles from './leaderboard.module.css'
 import btnStyles from '@/components/Btn.module.css'
 
 const POLL_INTERVAL = 12_000
+
+// Set dei nomi genere per distinzione rapida
+const GENRE_NAMES = new Set(GENRES.map(g => g.name))
+
+type Tab = 'global' | 'genres' | 'artists'
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: '2-digit' })
@@ -33,11 +39,18 @@ function formatAvgTime(ms: number | null): string {
   return `${s.toFixed(1)}s 🐢`
 }
 
+function filterEntries(entries: LeaderboardEntry[], tab: Tab): LeaderboardEntry[] {
+  if (tab === 'genres')  return entries.filter(e => GENRE_NAMES.has(e.genre))
+  if (tab === 'artists') return entries.filter(e => !GENRE_NAMES.has(e.genre))
+  return entries
+}
+
 export default function LeaderboardPage() {
-  const [entries, setEntries]         = useState<LeaderboardEntry[]>([])
-  const [loading, setLoading]         = useState(true)
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [entries, setEntries]           = useState<LeaderboardEntry[]>([])
+  const [loading, setLoading]           = useState(true)
+  const [lastUpdated, setLastUpdated]   = useState<Date | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [tab, setTab]                   = useState<Tab>('global')
 
   const fetchLeaderboard = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
@@ -63,6 +76,14 @@ export default function LeaderboardPage() {
     return () => clearInterval(id)
   }, [fetchLeaderboard])
 
+  const visible = filterEntries(entries, tab)
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'global',  label: 'Globale' },
+    { id: 'genres',  label: 'Generi' },
+    { id: 'artists', label: 'Artisti' },
+  ]
+
   return (
     <div className={styles.page}>
       <AppNav backHref="/" backLabel="Home" title="Music Roulette" />
@@ -81,6 +102,26 @@ export default function LeaderboardPage() {
           )}
         </header>
 
+        {/* Tab bar */}
+        <div className={styles.tabs} role="tablist">
+          {tabs.map(t => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={tab === t.id}
+              className={`${styles.tab} ${tab === t.id ? styles.tabActive : ''}`}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+              {!loading && (
+                <span className={styles.tabCount}>
+                  {filterEntries(entries, t.id).length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
         {loading ? (
           <div className={styles.loading} aria-label="Caricamento classifica">
             {[...Array(5)].map((_, i) => (
@@ -95,7 +136,7 @@ export default function LeaderboardPage() {
               </div>
             ))}
           </div>
-        ) : entries.length === 0 ? (
+        ) : visible.length === 0 ? (
           <div className={styles.empty}>
             <p className={styles.emptyText}>
               Nessun punteggio ancora.<br />Sii il primo a entrare in classifica!
@@ -111,8 +152,8 @@ export default function LeaderboardPage() {
               <span className={styles.colTime}>Tempo avg</span>
             </div>
 
-            <ol className={styles.list} aria-label="Classifica globale">
-              {entries.map((entry, i) => (
+            <ol className={styles.list} aria-label={`Classifica ${tab}`}>
+              {visible.map((entry, i) => (
                 <li
                   key={entry.id}
                   className={`${styles.entry} ${i < 3 ? styles.entryPodium : ''}`}
