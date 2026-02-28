@@ -9,8 +9,9 @@ import btnStyles from '@/components/Btn.module.css'
 
 const POLL_INTERVAL = 12_000
 
-// Set dei nomi genere per distinzione rapida
-const GENRE_NAMES = new Set(GENRES.map(g => g.name))
+// Set dei nomi E degli id genere per distinzione rapida
+// gameName salva genreId in modalità genere, nome artista in modalità artista
+const GENRE_KEYS = new Set([...GENRES.map(g => g.name), ...GENRES.map(g => g.id)])
 
 type Tab = 'global' | 'genres' | 'artists'
 
@@ -40,8 +41,8 @@ function formatAvgTime(ms: number | null): string {
 }
 
 function filterEntries(entries: LeaderboardEntry[], tab: Tab): LeaderboardEntry[] {
-  if (tab === 'genres')  return entries.filter(e => GENRE_NAMES.has(e.genre))
-  if (tab === 'artists') return entries.filter(e => !GENRE_NAMES.has(e.genre))
+  if (tab === 'genres')  return entries.filter(e => GENRE_KEYS.has(e.genre))
+  if (tab === 'artists') return entries.filter(e => !GENRE_KEYS.has(e.genre))
   return entries
 }
 
