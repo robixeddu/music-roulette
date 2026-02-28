@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { GameController } from '@/components/GameController'
 import { GameSkeleton } from '@/components/GameSkeleton'
 import { ThemeProvider } from '@/components/ThemeProvider'
-import { AppNav } from '@/components/AppNav'
+import { GameNav } from '@/components/GameNav'
 import { getThemeForGenre, getGenreById, GENRES, DEFAULT_THEME } from '@/lib/genres'
 import type { Metadata } from 'next'
 import type { TrackQuestion } from '@/lib/types'
@@ -39,8 +39,6 @@ export default async function GamePage({ searchParams }: GamePageProps) {
   const genre      = getGenreById(genreId) ?? GENRES[0]
 
   const navTitle  = artistName ? artistName : genre.name
-  const backHref  = artistName ? '/' : '/genres'
-  const backLabel = artistName ? 'Home' : 'Generi'
   const theme     = artistName ? DEFAULT_THEME : getThemeForGenre(genreId)
   const mode      = artistName
     ? { type: 'artist' as const, artistName }
@@ -51,7 +49,7 @@ export default async function GamePage({ searchParams }: GamePageProps) {
   return (
     <ThemeProvider theme={theme}>
       <div className={styles.page}>
-        <AppNav backHref={backHref} backLabel={backLabel} title={navTitle} showDot />
+        <GameNav mode={artistName ? 'artist' : 'genre'} title={navTitle} />
         <Suspense fallback={<GameSkeleton />}>
           <GameController firstQuestionPromise={firstQuestionPromise} gameMode={mode} />
         </Suspense>

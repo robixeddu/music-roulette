@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ArtistResult } from '@/lib/types'
+import { useLocale } from '@/hooks/useLocale'
 import styles from './ArtistSearch.module.css'
 
 interface ArtistSearchProps {
@@ -10,6 +11,7 @@ interface ArtistSearchProps {
 }
 
 export function ArtistSearch({ onSelect }: ArtistSearchProps) {
+  const { t } = useLocale()
   const router = useRouter()
   const [query, setQuery]           = useState('')
   const [results, setResults]       = useState<ArtistResult[]>([])
@@ -120,12 +122,12 @@ export function ArtistSearch({ onSelect }: ArtistSearchProps) {
           ref={inputRef}
           type="text"
           className={styles.input}
-          placeholder="Cerca un artista..."
+          placeholder={t('search.placeholder')}
           value={query}
           onChange={handleChange}
           onFocus={handleFocus}
           onKeyDown={e => e.key === 'Escape' && setIsOpen(false)}
-          aria-label="Cerca un artista"
+          aria-label={t('search.placeholder').replace('...', '')}
           aria-autocomplete="list"
           aria-expanded={isOpen}
           aria-controls="artist-suggestions"
@@ -146,18 +148,18 @@ export function ArtistSearch({ onSelect }: ArtistSearchProps) {
       {isOpen && dropdownDir === 'sheet' && (
         <>
           <div className={styles.overlay} aria-hidden="true" onClick={() => setIsOpen(false)} />
-          <div className={styles.sheet} role="dialog" aria-modal="true" aria-label="Cerca un artista">
+          <div className={styles.sheet} role="dialog" aria-modal="true" aria-label={t('search.placeholder').replace('...', '')}>
             <div className={styles.sheetHandle} aria-hidden="true" />
             <div className={styles.sheetInputWrap}>
               <input
                 ref={sheetInputRef}
                 type="text"
                 className={`${styles.input} ${styles.sheetInput}`}
-                placeholder="Cerca un artista..."
+                placeholder={t('search.placeholder')}
                 value={query}
                 onChange={handleChange}
                 onKeyDown={e => e.key === 'Escape' && setIsOpen(false)}
-                aria-label="Cerca un artista"
+                aria-label={t('search.placeholder').replace('...', '')}
                 autoComplete="off"
                 style={{ fontSize: '16px' }}
               />
@@ -170,7 +172,7 @@ export function ArtistSearch({ onSelect }: ArtistSearchProps) {
             </div>
             {results.length > 0
               ? resultsList
-              : <p className={styles.sheetEmpty}>{isLoading ? 'Ricerca in corso…' : 'Nessun risultato'}</p>
+              : <p className={styles.sheetEmpty}>{isLoading ? '…' : t('search.notfound', { q: '' }).replace(' "{q}"', '')}</p>
             }
           </div>
         </>

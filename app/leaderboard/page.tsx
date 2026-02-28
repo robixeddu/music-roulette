@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { AppNav } from '@/components/AppNav'
 import type { LeaderboardEntry } from '@/lib/types'
 import { GENRES } from '@/lib/genres'
+import { useLocale } from '@/hooks/useLocale'
 import styles from './leaderboard.module.css'
 import btnStyles from '@/components/Btn.module.css'
 
@@ -47,6 +48,7 @@ function filterEntries(entries: LeaderboardEntry[], tab: Tab): LeaderboardEntry[
 }
 
 export default function LeaderboardPage() {
+  const { t } = useLocale()
   const [entries, setEntries]           = useState<LeaderboardEntry[]>([])
   const [loading, setLoading]           = useState(true)
   const [lastUpdated, setLastUpdated]   = useState<Date | null>(null)
@@ -80,9 +82,9 @@ export default function LeaderboardPage() {
   const visible = filterEntries(entries, tab)
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'global',  label: 'Globale' },
-    { id: 'genres',  label: 'Generi' },
-    { id: 'artists', label: 'Artisti' },
+    { id: 'global',  label: t('lb.tab.global') },
+    { id: 'genres',  label: t('lb.tab.genres') },
+    { id: 'artists', label: t('lb.tab.artists') },
   ]
 
   return (
@@ -91,13 +93,13 @@ export default function LeaderboardPage() {
 
       <div className={styles.content}>
         <header className={styles.header}>
-          <h1 className={styles.title}>🏆 Hall of Fame</h1>
-          <p className={styles.subtitle}>I migliori giocatori di Music Roulette</p>
+          <h1 className={styles.title}>{t('lb.title')}</h1>
+          <p className={styles.subtitle}>{t('lb.subtitle')}</p>
           {lastUpdated && (
             <p className={styles.updated} aria-live="polite">
               {isRefreshing
-                ? '↻ aggiornamento…'
-                : `aggiornato alle ${lastUpdated.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+                ? t('lb.updating')
+                : t('lb.updated', { time: lastUpdated.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }) })
               }
             </p>
           )}
@@ -140,26 +142,26 @@ export default function LeaderboardPage() {
         ) : visible.length === 0 ? (
           <div className={styles.empty}>
             <p className={styles.emptyText}>
-              Nessun punteggio ancora.<br />Sii il primo a entrare in classifica!
+              {t('lb.empty').split('\n').map((line, i) => <span key={i}>{line}{i === 0 && <br />}</span>)}
             </p>
-            <a href="/" className={`${btnStyles.btn} ${btnStyles.primary}`}>Gioca ora</a>
+            <a href="/" className={`${btnStyles.btn} ${btnStyles.primary}`}>{t('lb.playnow')}</a>
           </div>
         ) : (
           <>
             <div className={styles.colsHeader} aria-hidden="true">
               <span>#</span>
-              <span>Giocatore</span>
-              <span className={styles.colScore}>Punti</span>
-              <span className={styles.colTime}>Tempo avg</span>
+              {t('lb.col.player')}
+              <span className={styles.colScore}>{t('lb.col.score')}</span>
+              <span className={styles.colTime}>{t('lb.col.time')}</span>
             </div>
 
-            <ol className={styles.list} aria-label={`Classifica ${tab}`}>
+            <ol className={styles.list} aria-label={t('lb.aria', { tab })}>
               {visible.map((entry, i) => (
                 <li
                   key={entry.id}
                   className={`${styles.entry} ${i < 3 ? styles.entryPodium : ''}`}
                 >
-                  <span className={styles.rank} aria-label={`Posizione ${i + 1}`}>
+                  <span className={styles.rank} aria-label={t('lb.pos', { n: i + 1 })}>
                     {rankEmoji(i + 1)}
                   </span>
                   <div className={styles.info}>

@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import type { TrackQuestion, TrackOption, GameState } from '@/lib/types'
 import { applyGuess, formatScore, makeInitialState } from '@/lib/game-utils'
+import { useLocale } from '@/hooks/useLocale'
 import { loadLevel, saveLevel, getNextLevel, calcLeaderboardScore, MAX_LEVEL } from '@/lib/levels'
 import type { Level } from '@/lib/levels'
 import { QuestionView } from './QuestionView'
@@ -74,7 +75,9 @@ interface GameControllerProps {
   gameMode: GameMode
 }
 
+// GameController is already 'use client'
 export function GameController({ firstQuestionPromise, gameMode: initialMode }: GameControllerProps) {
+  const { t } = useLocale()
   const router = useRouter()
   const [gameMode, setGameMode]     = useState<GameMode>(initialMode)
   const [gameState, setGameState]   = useState<GameState>(makeInitialState())
@@ -212,7 +215,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
         </div>
         <div
           className={styles.score}
-          aria-label={`Punteggio: ${formatScore(gameState.score, level.winScore)}`}
+          aria-label={t('game.score.aria', { score: formatScore(gameState.score, level.winScore) })}
         >
           <span aria-hidden="true">{formatScore(gameState.score, level.winScore)}</span>
         </div>

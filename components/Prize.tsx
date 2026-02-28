@@ -5,6 +5,7 @@ import { getPrize } from '@/lib/game-utils'
 import { getNextLevel } from '@/lib/levels'
 import type { Level } from '@/lib/levels'
 import { RetryButtons } from './RetryButtons'
+import { useLocale } from '@/hooks/useLocale'
 import styles from './Prize.module.css'
 
 interface PrizeProps {
@@ -16,11 +17,11 @@ interface PrizeProps {
 }
 
 export function Prize({ level, gameName, onRestart, onArtistSelect, onAdvanceLevel }: PrizeProps) {
+  const { t } = useLocale()
   const prize     = getPrize(level.name)
   const nextLevel = getNextLevel(level)
   const firedRef  = useRef(false)
 
-  // Avanza il livello subito — in background, senza toccare la UI
   useEffect(() => {
     if (nextLevel && !firedRef.current) {
       firedRef.current = true
@@ -33,18 +34,18 @@ export function Prize({ level, gameName, onRestart, onArtistSelect, onAdvanceLev
       className={styles.prize}
       role="status"
       aria-live="assertive"
-      aria-label={`Livello completato! ${prize.message}`}
+      aria-label={t('prize.label', { message: prize.message })}
     >
       <div className={styles.emoji} aria-hidden="true">{prize.emoji}</div>
-      <h2 className={styles.title}>Livello completato!</h2>
+      <h2 className={styles.title}>{t('prize.title')}</h2>
       <p className={styles.message}>{prize.message}</p>
 
       {nextLevel && (
         <div className={styles.nextLevel}>
           <p className={styles.nextLevelLabel}>
-            Prossimo livello: <strong>{nextLevel.name}</strong>
+            {t('prize.nextLevel')} <strong>{nextLevel.name}</strong>
             <span className={styles.nextLevelDetail}>
-              {nextLevel.winScore} risposte · moltiplicatore ×{nextLevel.multiplier}
+              {t('prize.answers', { n: nextLevel.winScore })} · {t('prize.multiplier', { n: nextLevel.multiplier })}
             </span>
           </p>
         </div>

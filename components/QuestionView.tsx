@@ -5,6 +5,7 @@ import Image from 'next/image'
 import type { TrackQuestion, TrackOption } from '@/lib/types'
 import { AudioPlayer } from './AudioPlayer'
 import { ChoiceList } from './ChoiceList'
+import { useLocale } from '@/hooks/useLocale'
 import styles from './QuestionView.module.css'
 
 interface QuestionViewProps {
@@ -15,12 +16,11 @@ interface QuestionViewProps {
 }
 
 export function QuestionView({ questionPromise, selectedId, onSelect, onFirstPlay }: QuestionViewProps) {
+  const { t } = useLocale()
   const question = use(questionPromise)
   const playBtnRef = useRef<HTMLButtonElement>(null)
 
-  // Focus automatico sul bottone play ad ogni nuova domanda
   useEffect(() => {
-    // rAF garantisce che il focus arrivi dopo che il browser ha finito di renderizzare
     const id = requestAnimationFrame(() => playBtnRef.current?.focus())
     return () => cancelAnimationFrame(id)
   }, [question])
@@ -31,7 +31,6 @@ export function QuestionView({ questionPromise, selectedId, onSelect, onFirstPla
       ? 'correct'
       : 'wrong'
 
-  // Cover svelata sia su corretto che su sbagliato, con stato per colorazione
   const coverRevealed = selectedId !== null
 
   return (
@@ -39,7 +38,7 @@ export function QuestionView({ questionPromise, selectedId, onSelect, onFirstPla
       <div className={styles.coverWrap}>
         <Image
           src={question.albumCover}
-          alt="Copertina album — prova a indovinare la canzone!"
+          alt={t('question.cover.alt')}
           width={200}
           height={200}
           className={[
@@ -59,9 +58,7 @@ export function QuestionView({ questionPromise, selectedId, onSelect, onFirstPla
         autoplay={true}
       />
 
-      <p className="sr-only">
-        Ascolta l&apos;estratto e scegli l&apos;artista e il titolo corretti tra le opzioni.
-      </p>
+      <p className="sr-only">{t('question.sr')}</p>
 
       <ChoiceList
         options={question.options}

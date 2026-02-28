@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect, useCallback, type RefObject } from 'react'
+import { useLocale } from '@/hooks/useLocale'
 import styles from './AudioPlayer.module.css'
 
 interface AudioPlayerProps {
@@ -14,6 +15,7 @@ interface AudioPlayerProps {
 type LoadState = 'loading' | 'ready' | 'error'
 
 export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4, playBtnRef, autoplay = false }: AudioPlayerProps) {
+  const { t } = useLocale()
   const audioRef      = useRef<HTMLAudioElement>(null)
   const internalBtnRef = useRef<HTMLButtonElement>(null)
   const btnRef = playBtnRef ?? internalBtnRef
@@ -127,7 +129,7 @@ export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4, playBtnRef, 
   const isDisabled  = loadState !== 'ready'
   const btnLabel    = loadState === 'loading' ? 'Caricamento audio...'
     : loadState === 'error' ? 'Audio non disponibile'
-    : isPlaying ? 'Metti in pausa' : 'Riproduci estratto'
+    : isPlaying ? t('player.pause') : t('player.play')
 
   return (
     <div className={styles.player}>

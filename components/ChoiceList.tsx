@@ -1,6 +1,7 @@
 'use client'
 
 import type { TrackOption, GuessResult } from '@/lib/types'
+import { useLocale } from '@/hooks/useLocale'
 import styles from './ChoiceList.module.css'
 
 interface ChoiceListProps {
@@ -12,10 +13,12 @@ interface ChoiceListProps {
 }
 
 export function ChoiceList({ options, selectedId, result, onSelect, disabled }: ChoiceListProps) {
+  const { t } = useLocale()
+
   return (
     <div
       role="radiogroup"
-      aria-label="Scegli l'artista e il titolo della canzone"
+      aria-label={t('choices.label')}
       className={styles.list}
     >
       {options.map((option) => {
@@ -28,7 +31,6 @@ export function ChoiceList({ options, selectedId, result, onSelect, disabled }: 
           else if (isSelected)  state = 'wrong'
         }
 
-        // Quando si sbaglia: evidenzia la risposta corretta con label "Era:"
         const isCorrectAfterWrong = showFeedback && result === 'wrong' && option.isCorrect
 
         const btnClass = [
@@ -46,12 +48,10 @@ export function ChoiceList({ options, selectedId, result, onSelect, disabled }: 
             disabled={disabled}
             aria-pressed={isSelected}
           >
-            <span className={styles.label}>
-              {option.label}
-            </span>
+            <span className={styles.label}>{option.label}</span>
             {showFeedback && (
               <span className="sr-only">
-                {state === 'correct' ? 'Risposta corretta' : state === 'wrong' ? 'Risposta sbagliata' : ''}
+                {state === 'correct' ? t('choices.correct') : state === 'wrong' ? t('choices.wrong') : ''}
               </span>
             )}
           </button>

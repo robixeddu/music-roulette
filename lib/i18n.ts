@@ -1,0 +1,424 @@
+// ─── Locale supportati ────────────────────────────────────────────────────────
+
+export type Locale = 'it' | 'en' | 'es' | 'fr' | 'de'
+
+export const SUPPORTED_LOCALES: Locale[] = ['it', 'en', 'es', 'fr', 'de']
+export const DEFAULT_LOCALE: Locale = 'it'
+
+// ─── Dizionario ───────────────────────────────────────────────────────────────
+
+export type TranslationKey = keyof typeof TRANSLATIONS['it']
+
+export const TRANSLATIONS = {
+  it: {
+    // Homepage
+    'home.tagline':         'Riconosci la canzone prima che le vite finiscano',
+    'home.rules.label':     'Regole del gioco',
+    'home.rule1':           'Scegli il genere o cerca un artista',
+    'home.rule2':           "Ascolta l'estratto di 30 secondi",
+    'home.rule3':           'Scegli artista e titolo tra 4 opzioni',
+    'home.rule4':           'Hai 3 vite — ogni errore ne costa una',
+    'home.rule5':           'Vinci il livello e scala fino a Master 👑',
+    'home.btn.genre':       'Scegli il genere',
+    'home.or':              'oppure',
+    'home.leaderboard':     '🏆 Hall of Fame',
+
+    // Generi page
+    'genres.title':         'Scegli il genere',
+    'genres.subtitle':      "Ascolta l'estratto e indovina artista e titolo",
+    'genres.play':          'Gioca con {name}',
+
+    // Nav
+    'nav.back.home':        'Home',
+    'nav.back.genres':      'Generi',
+
+    // AudioPlayer
+    'player.play':          'Riproduci estratto',
+    'player.pause':         'Metti in pausa',
+
+    // QuestionView
+    'question.sr':          "Ascolta l'estratto e scegli l'artista e il titolo corretti tra le opzioni.",
+    'question.cover.alt':   'Copertina album — prova a indovinare la canzone!',
+
+    // ChoiceList
+    'choices.label':        "Scegli l'artista e il titolo della canzone",
+    'choices.correct':      'Risposta corretta',
+    'choices.wrong':        'Risposta sbagliata',
+
+    // Prize
+    'prize.label':          'Livello completato! {message}',
+    'prize.title':          'Livello completato!',
+    'prize.nextLevel':      'Prossimo livello:',
+    'prize.answers':        '{n} risposte',
+    'prize.multiplier':     'moltiplicatore ×{n}',
+
+    // RetryButtons
+    'retry.playAgain':      'Gioca ancora con {name}',
+    'retry.or':             'oppure',
+
+    // GameOver
+    'gameover.victory.aria':'Hai completato tutti i livelli!',
+    'gameover.lost.aria':   'Game over. {score} risposte corrette.',
+    'gameover.victory.msg': 'Hai completato tutti i livelli. Leggendario.',
+    'gameover.lost.one':    'risposta corretta.',
+    'gameover.lost.many':   'risposte corrette.',
+    'gameover.level':       'Livello raggiunto',
+    'gameover.speed':       'Velocità media',
+    'gameover.total':       'Punteggio finale',
+    'gameover.save':        '🏆 Salva punteggio',
+    'gameover.saved':       '{name} salvato in classifica!',
+    'gameover.view':        'Vedi classifica',
+    'gameover.modal.title': '🏆 Sei nella top 50!',
+    'gameover.modal.aria':  'Salva punteggio',
+    'gameover.modal.close': 'Chiudi',
+    'gameover.modal.error': 'Errore nel salvataggio. Riprova.',
+    'gameover.name.label':  'ENTER YOUR NAME',
+
+    // GameController / GameError
+    'game.title':           'Gioca — Music Roulette',
+    'game.score.aria':      'Punteggio: {score}',
+    'game.error.title':     'Errore nel caricamento',
+    'game.error.retry':     'Riprova',
+
+    // Search artist
+    'search.placeholder':   'Cerca un artista...',
+    'search.notfound':      'Nessun risultato per "{q}"',
+    'search.error':         'Errore nella ricerca. Riprova.',
+
+    // Leaderboard
+    'lb.title':             '🏆 Hall of Fame',
+    'lb.subtitle':          'I migliori giocatori di Music Roulette',
+    'lb.updating':          '↻ aggiornamento…',
+    'lb.updated':           'aggiornato alle {time}',
+    'lb.tab.global':        'Globale',
+    'lb.tab.genres':        'Generi',
+    'lb.tab.artists':       'Artisti',
+    'lb.col.player':        'Giocatore',
+    'lb.col.score':         'Punti',
+    'lb.col.time':          'Tempo avg',
+    'lb.aria':              'Classifica {tab}',
+    'lb.pos':               'Posizione {n}',
+    'lb.empty':             'Nessun punteggio ancora.\nSii il primo a entrare in classifica!',
+    'lb.playnow':           'Gioca ora',
+  },
+
+  en: {
+    'home.tagline':         'Recognise the song before you run out of lives',
+    'home.rules.label':     'How to play',
+    'home.rule1':           'Choose a genre or search for an artist',
+    'home.rule2':           'Listen to the 30-second preview',
+    'home.rule3':           'Pick the artist and title from 4 options',
+    'home.rule4':           'You have 3 lives — each mistake costs one',
+    'home.rule5':           'Complete the level and climb to Master 👑',
+    'home.btn.genre':       'Choose a genre',
+    'home.or':              'or',
+    'home.leaderboard':     '🏆 Hall of Fame',
+
+    'genres.title':         'Choose a genre',
+    'genres.subtitle':      'Listen to the preview and guess the artist and title',
+    'genres.play':          'Play with {name}',
+
+    'nav.back.home':        'Home',
+    'nav.back.genres':      'Genres',
+
+    'player.play':          'Play preview',
+    'player.pause':         'Pause',
+
+    'question.sr':          'Listen to the preview and pick the correct artist and title.',
+    'question.cover.alt':   'Album cover — try to guess the song!',
+
+    'choices.label':        'Choose the artist and title of the song',
+    'choices.correct':      'Correct answer',
+    'choices.wrong':        'Wrong answer',
+
+    'prize.label':          'Level complete! {message}',
+    'prize.title':          'Level complete!',
+    'prize.nextLevel':      'Next level:',
+    'prize.answers':        '{n} answers',
+    'prize.multiplier':     'multiplier ×{n}',
+
+    'retry.playAgain':      'Play again with {name}',
+    'retry.or':             'or',
+
+    'gameover.victory.aria':'You completed all levels!',
+    'gameover.lost.aria':   'Game over. {score} correct answers.',
+    'gameover.victory.msg': 'You completed all levels. Legendary.',
+    'gameover.lost.one':    'correct answer.',
+    'gameover.lost.many':   'correct answers.',
+    'gameover.level':       'Level reached',
+    'gameover.speed':       'Average speed',
+    'gameover.total':       'Final score',
+    'gameover.save':        '🏆 Save score',
+    'gameover.saved':       '{name} saved to the leaderboard!',
+    'gameover.view':        'View leaderboard',
+    'gameover.modal.title': '🏆 You\'re in the top 50!',
+    'gameover.modal.aria':  'Save score',
+    'gameover.modal.close': 'Close',
+    'gameover.modal.error': 'Error saving. Please try again.',
+    'gameover.name.label':  'ENTER YOUR NAME',
+
+    'game.title':           'Play — Music Roulette',
+    'game.score.aria':      'Score: {score}',
+    'game.error.title':     'Loading error',
+    'game.error.retry':     'Retry',
+
+    'search.placeholder':   'Search for an artist...',
+    'search.notfound':      'No results for "{q}"',
+    'search.error':         'Search error. Please try again.',
+
+    'lb.title':             '🏆 Hall of Fame',
+    'lb.subtitle':          'The best Music Roulette players',
+    'lb.updating':          '↻ updating…',
+    'lb.updated':           'updated at {time}',
+    'lb.tab.global':        'Global',
+    'lb.tab.genres':        'Genres',
+    'lb.tab.artists':       'Artists',
+    'lb.col.player':        'Player',
+    'lb.col.score':         'Score',
+    'lb.col.time':          'Avg time',
+    'lb.aria':              '{tab} leaderboard',
+    'lb.pos':               'Position {n}',
+    'lb.empty':             'No scores yet.\nBe the first on the leaderboard!',
+    'lb.playnow':           'Play now',
+  },
+
+  es: {
+    'home.tagline':         'Reconoce la canción antes de quedarte sin vidas',
+    'home.rules.label':     'Cómo jugar',
+    'home.rule1':           'Elige un género o busca un artista',
+    'home.rule2':           'Escucha el fragmento de 30 segundos',
+    'home.rule3':           'Elige artista y título entre 4 opciones',
+    'home.rule4':           'Tienes 3 vidas — cada error cuesta una',
+    'home.rule5':           'Completa el nivel y sube hasta Master 👑',
+    'home.btn.genre':       'Elige el género',
+    'home.or':              'o',
+    'home.leaderboard':     '🏆 Hall of Fame',
+
+    'genres.title':         'Elige el género',
+    'genres.subtitle':      'Escucha el fragmento y adivina artista y título',
+    'genres.play':          'Jugar con {name}',
+
+    'nav.back.home':        'Inicio',
+    'nav.back.genres':      'Géneros',
+
+    'player.play':          'Reproducir fragmento',
+    'player.pause':         'Pausar',
+
+    'question.sr':          'Escucha el fragmento y elige el artista y título correctos.',
+    'question.cover.alt':   'Portada del álbum — ¡intenta adivinar la canción!',
+
+    'choices.label':        'Elige el artista y el título de la canción',
+    'choices.correct':      'Respuesta correcta',
+    'choices.wrong':        'Respuesta incorrecta',
+
+    'prize.label':          '¡Nivel completado! {message}',
+    'prize.title':          '¡Nivel completado!',
+    'prize.nextLevel':      'Siguiente nivel:',
+    'prize.answers':        '{n} respuestas',
+    'prize.multiplier':     'multiplicador ×{n}',
+
+    'retry.playAgain':      'Jugar de nuevo con {name}',
+    'retry.or':             'o',
+
+    'gameover.victory.aria':'¡Completaste todos los niveles!',
+    'gameover.lost.aria':   'Game over. {score} respuestas correctas.',
+    'gameover.victory.msg': 'Completaste todos los niveles. Legendario.',
+    'gameover.lost.one':    'respuesta correcta.',
+    'gameover.lost.many':   'respuestas correctas.',
+    'gameover.level':       'Nivel alcanzado',
+    'gameover.speed':       'Velocidad media',
+    'gameover.total':       'Puntuación final',
+    'gameover.save':        '🏆 Guardar puntuación',
+    'gameover.saved':       '¡{name} guardado en el ranking!',
+    'gameover.view':        'Ver ranking',
+    'gameover.modal.title': '🏆 ¡Estás en el top 50!',
+    'gameover.modal.aria':  'Guardar puntuación',
+    'gameover.modal.close': 'Cerrar',
+    'gameover.modal.error': 'Error al guardar. Inténtalo de nuevo.',
+    'gameover.name.label':  'ENTER YOUR NAME',
+
+    'game.title':           'Jugar — Music Roulette',
+    'game.score.aria':      'Puntuación: {score}',
+    'game.error.title':     'Error al cargar',
+    'game.error.retry':     'Reintentar',
+
+    'search.placeholder':   'Buscar un artista...',
+    'search.notfound':      'Sin resultados para "{q}"',
+    'search.error':         'Error en la búsqueda. Inténtalo de nuevo.',
+
+    'lb.title':             '🏆 Hall of Fame',
+    'lb.subtitle':          'Los mejores jugadores de Music Roulette',
+    'lb.updating':          '↻ actualizando…',
+    'lb.updated':           'actualizado a las {time}',
+    'lb.tab.global':        'Global',
+    'lb.tab.genres':        'Géneros',
+    'lb.tab.artists':       'Artistas',
+    'lb.col.player':        'Jugador',
+    'lb.col.score':         'Puntos',
+    'lb.col.time':          'Tiempo prom.',
+    'lb.aria':              'Ranking {tab}',
+    'lb.pos':               'Posición {n}',
+    'lb.empty':             'Sin puntuaciones aún.\n¡Sé el primero en el ranking!',
+    'lb.playnow':           'Jugar ahora',
+  },
+
+  fr: {
+    'home.tagline':         'Reconnais la chanson avant de perdre toutes tes vies',
+    'home.rules.label':     'Comment jouer',
+    'home.rule1':           'Choisis un genre ou cherche un artiste',
+    'home.rule2':           "Écoute l'extrait de 30 secondes",
+    'home.rule3':           "Choisis l'artiste et le titre parmi 4 options",
+    'home.rule4':           'Tu as 3 vies — chaque erreur en coûte une',
+    'home.rule5':           "Complète le niveau et monte jusqu'à Master 👑",
+    'home.btn.genre':       'Choisir le genre',
+    'home.or':              'ou',
+    'home.leaderboard':     '🏆 Hall of Fame',
+
+    'genres.title':         'Choisir le genre',
+    'genres.subtitle':      "Écoute l'extrait et devine l'artiste et le titre",
+    'genres.play':          'Jouer avec {name}',
+
+    'nav.back.home':        'Accueil',
+    'nav.back.genres':      'Genres',
+
+    'player.play':          "Lire l'extrait",
+    'player.pause':         'Pause',
+
+    'question.sr':          "Écoute l'extrait et choisis l'artiste et le titre corrects.",
+    'question.cover.alt':   "Pochette de l'album — essaie de deviner la chanson !",
+
+    'choices.label':        "Choisis l'artiste et le titre de la chanson",
+    'choices.correct':      'Bonne réponse',
+    'choices.wrong':        'Mauvaise réponse',
+
+    'prize.label':          'Niveau terminé ! {message}',
+    'prize.title':          'Niveau terminé !',
+    'prize.nextLevel':      'Niveau suivant :',
+    'prize.answers':        '{n} réponses',
+    'prize.multiplier':     'multiplicateur ×{n}',
+
+    'retry.playAgain':      'Rejouer avec {name}',
+    'retry.or':             'ou',
+
+    'gameover.victory.aria':"Tu as complété tous les niveaux !",
+    'gameover.lost.aria':   'Game over. {score} bonnes réponses.',
+    'gameover.victory.msg': 'Tu as complété tous les niveaux. Légendaire.',
+    'gameover.lost.one':    'bonne réponse.',
+    'gameover.lost.many':   'bonnes réponses.',
+    'gameover.level':       'Niveau atteint',
+    'gameover.speed':       'Vitesse moyenne',
+    'gameover.total':       'Score final',
+    'gameover.save':        '🏆 Sauvegarder le score',
+    'gameover.saved':       '{name} sauvegardé dans le classement !',
+    'gameover.view':        'Voir le classement',
+    'gameover.modal.title': '🏆 Tu es dans le top 50 !',
+    'gameover.modal.aria':  'Sauvegarder le score',
+    'gameover.modal.close': 'Fermer',
+    'gameover.modal.error': 'Erreur lors de la sauvegarde. Réessaie.',
+    'gameover.name.label':  'ENTER YOUR NAME',
+
+    'game.title':           'Jouer — Music Roulette',
+    'game.score.aria':      'Score : {score}',
+    'game.error.title':     'Erreur de chargement',
+    'game.error.retry':     'Réessayer',
+
+    'search.placeholder':   'Chercher un artiste...',
+    'search.notfound':      'Aucun résultat pour « {q} »',
+    'search.error':         'Erreur de recherche. Réessaie.',
+
+    'lb.title':             '🏆 Hall of Fame',
+    'lb.subtitle':          'Les meilleurs joueurs de Music Roulette',
+    'lb.updating':          '↻ mise à jour…',
+    'lb.updated':           'mis à jour à {time}',
+    'lb.tab.global':        'Global',
+    'lb.tab.genres':        'Genres',
+    'lb.tab.artists':       'Artistes',
+    'lb.col.player':        'Joueur',
+    'lb.col.score':         'Points',
+    'lb.col.time':          'Temps moy.',
+    'lb.aria':              'Classement {tab}',
+    'lb.pos':               'Position {n}',
+    'lb.empty':             "Aucun score pour l'instant.\nSois le premier dans le classement !",
+    'lb.playnow':           'Jouer maintenant',
+  },
+
+  de: {
+    'home.tagline':         'Erkenne den Song bevor dir die Leben ausgehen',
+    'home.rules.label':     'Spielregeln',
+    'home.rule1':           'Wähle ein Genre oder suche einen Künstler',
+    'home.rule2':           'Höre die 30-Sekunden-Vorschau',
+    'home.rule3':           'Wähle Künstler und Titel aus 4 Optionen',
+    'home.rule4':           'Du hast 3 Leben — jeder Fehler kostet eines',
+    'home.rule5':           'Schließe das Level ab und steige bis Master auf 👑',
+    'home.btn.genre':       'Genre wählen',
+    'home.or':              'oder',
+    'home.leaderboard':     '🏆 Hall of Fame',
+
+    'genres.title':         'Genre wählen',
+    'genres.subtitle':      'Höre die Vorschau und errate Künstler und Titel',
+    'genres.play':          'Spielen mit {name}',
+
+    'nav.back.home':        'Startseite',
+    'nav.back.genres':      'Genres',
+
+    'player.play':          'Vorschau abspielen',
+    'player.pause':         'Pause',
+
+    'question.sr':          'Höre die Vorschau und wähle den richtigen Künstler und Titel.',
+    'question.cover.alt':   'Album-Cover — versuche den Song zu erraten!',
+
+    'choices.label':        'Wähle Künstler und Titel des Songs',
+    'choices.correct':      'Richtige Antwort',
+    'choices.wrong':        'Falsche Antwort',
+
+    'prize.label':          'Level abgeschlossen! {message}',
+    'prize.title':          'Level abgeschlossen!',
+    'prize.nextLevel':      'Nächstes Level:',
+    'prize.answers':        '{n} Antworten',
+    'prize.multiplier':     'Multiplikator ×{n}',
+
+    'retry.playAgain':      'Nochmal spielen mit {name}',
+    'retry.or':             'oder',
+
+    'gameover.victory.aria':'Du hast alle Level abgeschlossen!',
+    'gameover.lost.aria':   'Game over. {score} richtige Antworten.',
+    'gameover.victory.msg': 'Du hast alle Level abgeschlossen. Legendär.',
+    'gameover.lost.one':    'richtige Antwort.',
+    'gameover.lost.many':   'richtige Antworten.',
+    'gameover.level':       'Erreichtes Level',
+    'gameover.speed':       'Durchschnittsgeschwindigkeit',
+    'gameover.total':       'Endpunktzahl',
+    'gameover.save':        '🏆 Punkte speichern',
+    'gameover.saved':       '{name} in der Rangliste gespeichert!',
+    'gameover.view':        'Rangliste ansehen',
+    'gameover.modal.title': '🏆 Du bist in den Top 50!',
+    'gameover.modal.aria':  'Punkte speichern',
+    'gameover.modal.close': 'Schließen',
+    'gameover.modal.error': 'Fehler beim Speichern. Bitte erneut versuchen.',
+    'gameover.name.label':  'ENTER YOUR NAME',
+
+    'game.title':           'Spielen — Music Roulette',
+    'game.score.aria':      'Punktestand: {score}',
+    'game.error.title':     'Ladefehler',
+    'game.error.retry':     'Erneut versuchen',
+
+    'search.placeholder':   'Künstler suchen...',
+    'search.notfound':      'Keine Ergebnisse für „{q}"',
+    'search.error':         'Suchfehler. Bitte erneut versuchen.',
+
+    'lb.title':             '🏆 Hall of Fame',
+    'lb.subtitle':          'Die besten Music Roulette Spieler',
+    'lb.updating':          '↻ wird aktualisiert…',
+    'lb.updated':           'aktualisiert um {time}',
+    'lb.tab.global':        'Global',
+    'lb.tab.genres':        'Genres',
+    'lb.tab.artists':       'Künstler',
+    'lb.col.player':        'Spieler',
+    'lb.col.score':         'Punkte',
+    'lb.col.time':          'Ø-Zeit',
+    'lb.aria':              '{tab}-Rangliste',
+    'lb.pos':               'Position {n}',
+    'lb.empty':             'Noch keine Punkte.\nSei der Erste in der Rangliste!',
+    'lb.playnow':           'Jetzt spielen',
+  },
+} as const
