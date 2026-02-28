@@ -38,7 +38,7 @@ export default async function GamePage({ searchParams }: GamePageProps) {
   const genreId    = params.genreId ?? GENRES[0].id
   const genre      = getGenreById(genreId) ?? GENRES[0]
 
-  const navTitle  = artistName ? `🎤 ${artistName}` : `${genre.emoji} ${genre.name}`
+  const navTitle  = artistName ? artistName : genre.name
   const backHref  = artistName ? '/' : '/genres'
   const backLabel = artistName ? 'Home' : 'Generi'
   const theme     = artistName ? DEFAULT_THEME : getThemeForGenre(genreId)
@@ -51,7 +51,7 @@ export default async function GamePage({ searchParams }: GamePageProps) {
   return (
     <ThemeProvider theme={theme}>
       <div className={styles.page}>
-        <AppNav backHref={backHref} backLabel={backLabel} title={navTitle} />
+        <AppNav backHref={backHref} backLabel={backLabel} title={navTitle} showDot />
         <Suspense fallback={<GameSkeleton />}>
           <GameController firstQuestionPromise={firstQuestionPromise} gameMode={mode} />
         </Suspense>

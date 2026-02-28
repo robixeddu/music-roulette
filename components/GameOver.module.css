@@ -13,8 +13,14 @@
 }
 
 @keyframes fadeScaleIn {
-  from { opacity: 0; transform: scale(0.92); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .emoji {
@@ -23,9 +29,15 @@
 }
 
 @keyframes bounce {
-  0%   { transform: scale(0); }
-  60%  { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .title {
@@ -115,8 +127,13 @@
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 .nicknameRow {
@@ -154,7 +171,9 @@
   font-weight: 400;
 }
 
-.nicknameInput:disabled { opacity: 0.5; }
+.nicknameInput:disabled {
+  opacity: 0.5;
+}
 
 .nicknameBtn {
   padding: 0.75rem 1rem;
@@ -162,7 +181,10 @@
   min-width: 48px;
 }
 
-.nicknameBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.nicknameBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .nicknameError {
   font-size: 0.75rem;
@@ -183,8 +205,9 @@
   }
 }
 
-.savedIcon { font-size: 1.5rem; }
-
+.savedIcon {
+  font-size: 1.5rem;
+}
 
 /* ─── Modal overlay ────────────────────────────────────────────────────────── */
 .overlay {
@@ -201,8 +224,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal {
@@ -221,25 +248,48 @@
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modalClose {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
   background: none;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
   color: var(--text-dim);
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
+  font-size: 1.25rem;
   line-height: 1;
-  transition: color 0.15s;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background 0.15s;
 }
 
-.modalClose:hover { color: var(--text-primary); }
+.modalClose:hover {
+  color: var(--text-primary);
+  border-color: var(--border);
+  background: var(--bg-elevated);
+}
+
+.modalClose:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
 
 .modalTitle {
   font-family: var(--font-display);

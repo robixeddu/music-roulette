@@ -5,7 +5,7 @@ export const GENRES: Genre[] = [
   {
     id: "pop",
     name: "Pop",
-    emoji: "💿",
+    emoji: "✨",
     group: "Pop",
     searchTerms: [
       "The Beatles",
@@ -33,7 +33,7 @@ export const GENRES: Genre[] = [
   {
     id: "brit-pop",
     name: "Brit Pop",
-    emoji: "🎡",
+    emoji: "🇬🇧",
     group: "Pop",
     searchTerms: [
       "Oasis",
@@ -61,7 +61,7 @@ export const GENRES: Genre[] = [
   {
     id: "kpop",
     name: "K-Pop",
-    emoji: "🌸",
+    emoji: "🎀",
     group: "Pop",
     searchTerms: [
       "BTS",
@@ -90,7 +90,7 @@ export const GENRES: Genre[] = [
   {
     id: "rock",
     name: "Rock",
-    emoji: "🎸",
+    emoji: "🔥",
     group: "Rock",
     searchTerms: [
       "The Rolling Stones",
@@ -118,7 +118,7 @@ export const GENRES: Genre[] = [
   {
     id: "hard-rock",
     name: "Hard Rock",
-    emoji: "🔊",
+    emoji: "⚡",
     group: "Rock",
     searchTerms: [
       "Deep Purple",
@@ -146,7 +146,7 @@ export const GENRES: Genre[] = [
   {
     id: "stoner-rock",
     name: "Stoner Rock",
-    emoji: "🌋",
+    emoji: "🌿",
     group: "Rock",
     searchTerms: [
       "Sleep",
@@ -174,7 +174,7 @@ export const GENRES: Genre[] = [
   {
     id: "post-rock",
     name: "Post Rock",
-    emoji: "🌌",
+    emoji: "🌊",
     group: "Rock",
     searchTerms: [
       "Godspeed You! Black Emperor",
@@ -203,7 +203,7 @@ export const GENRES: Genre[] = [
   {
     id: "metal",
     name: "Metal",
-    emoji: "⚔️",
+    emoji: "🗡️",
     group: "Metal",
     searchTerms: [
       "Black Sabbath",
@@ -231,7 +231,7 @@ export const GENRES: Genre[] = [
   {
     id: "trash-metal",
     name: "Thrash Metal",
-    emoji: "💀",
+    emoji: "🔱",
     group: "Metal",
     searchTerms: [
       "Metallica",
@@ -259,7 +259,7 @@ export const GENRES: Genre[] = [
   {
     id: "death-metal",
     name: "Death Metal",
-    emoji: "🦴",
+    emoji: "🩸",
     group: "Metal",
     searchTerms: [
       "Death",
@@ -287,7 +287,7 @@ export const GENRES: Genre[] = [
   {
     id: "black-metal",
     name: "Black Metal",
-    emoji: "🌑",
+    emoji: "🖤",
     group: "Metal",
     searchTerms: [
       "Bathory",
@@ -316,7 +316,7 @@ export const GENRES: Genre[] = [
   {
     id: "rap",
     name: "Rap",
-    emoji: "🎤",
+    emoji: "👑",
     group: "Hip-Hop",
     searchTerms: [
       "Rakim",
@@ -344,7 +344,7 @@ export const GENRES: Genre[] = [
   {
     id: "hiphop",
     name: "Hip-Hop",
-    emoji: "🎧",
+    emoji: "🌀",
     group: "Hip-Hop",
     searchTerms: [
       "Public Enemy",
@@ -373,7 +373,7 @@ export const GENRES: Genre[] = [
   {
     id: "electronic",
     name: "Electronic",
-    emoji: "🖲️",
+    emoji: "◈",
     group: "Electronic",
     searchTerms: [
       "Kraftwerk",
@@ -398,11 +398,39 @@ export const GENRES: Genre[] = [
       "Wolfgang Voigt",
     ],
   },
+  {
+    id: "dub",
+    name: "Dub",
+    emoji: "🌫️",
+    group: "Electronic",
+    searchTerms: [
+      "King Tubby",
+      "Lee Scratch Perry",
+      "Augustus Pablo",
+      "Scientist",
+      "Prince Jammy",
+      "Yabby You",
+      "Joe Gibbs",
+      "Mikey Dread",
+      "Rhythm & Sound",
+      "The Orb",
+      "Pole",
+      "Twilight Circus",
+      "Mark Ernestus",
+      "Burial",
+      "Digital Mystikz",
+      "Mala",
+      "Coki",
+      "Loefah",
+      "Pinch",
+      "Shackleton",
+    ],
+  },
   // ── Jazz ─────────────────────────────────────────────────────────────────
   {
     id: "jazz",
     name: "Jazz",
-    emoji: "🎷",
+    emoji: "🌙",
     group: "Jazz",
     searchTerms: [
       "Miles Davis",
@@ -431,7 +459,7 @@ export const GENRES: Genre[] = [
   {
     id: "rnb",
     name: "R&B",
-    emoji: "🕯️",
+    emoji: "💜",
     group: "Soul",
     searchTerms: [
       "Sam Cooke",
@@ -459,7 +487,7 @@ export const GENRES: Genre[] = [
   {
     id: "funk",
     name: "Funk & Soul",
-    emoji: "🕺",
+    emoji: "🧡",
     group: "Soul",
     searchTerms: [
       "James Brown",
@@ -488,7 +516,7 @@ export const GENRES: Genre[] = [
   {
     id: "blues",
     name: "Blues",
-    emoji: "🎺",
+    emoji: "🌧️",
     group: "Blues",
     searchTerms: [
       "Robert Johnson",
@@ -517,7 +545,7 @@ export const GENRES: Genre[] = [
   {
     id: "folk",
     name: "Folk",
-    emoji: "🪕",
+    emoji: "🍂",
     group: "Folk",
     searchTerms: [
       "Woody Guthrie",
@@ -545,7 +573,7 @@ export const GENRES: Genre[] = [
   {
     id: "country",
     name: "Country",
-    emoji: "🤠",
+    emoji: "🏜️",
     group: "Folk",
     searchTerms: [
       "Hank Williams",
@@ -574,7 +602,7 @@ export const GENRES: Genre[] = [
   {
     id: "punk",
     name: "Punk",
-    emoji: "📍",
+    emoji: "✖️",
     group: "Punk",
     searchTerms: [
       "Sex Pistols",
@@ -602,7 +630,7 @@ export const GENRES: Genre[] = [
   {
     id: "hardcore-punk",
     name: "Hardcore",
-    emoji: "⚡",
+    emoji: "🔴",
     group: "Punk",
     searchTerms: [
       "Black Flag",
@@ -631,7 +659,7 @@ export const GENRES: Genre[] = [
   {
     id: "reggae",
     name: "Reggae",
-    emoji: "🌴",
+    emoji: "☀️",
     group: "Reggae",
     searchTerms: [
       "Bob Marley",
@@ -656,39 +684,11 @@ export const GENRES: Genre[] = [
       "The Congos",
     ],
   },
-  {
-    id: "dub",
-    name: "Dub",
-    emoji: "〰️",
-    group: "Reggae",
-    searchTerms: [
-      "King Tubby",
-      "Lee Scratch Perry",
-      "Augustus Pablo",
-      "Scientist",
-      "Prince Jammy",
-      "Yabby You",
-      "Joe Gibbs",
-      "Mikey Dread",
-      "Rhythm & Sound",
-      "The Orb",
-      "Pole",
-      "Twilight Circus",
-      "Mark Ernestus",
-      "Burial",
-      "Digital Mystikz",
-      "Mala",
-      "Coki",
-      "Loefah",
-      "Pinch",
-      "Shackleton",
-    ],
-  },
   // ── Classical ────────────────────────────────────────────────────────────
   {
     id: "classical",
     name: "Classical",
-    emoji: "🎻",
+    emoji: "🕊️",
     group: "Classical",
     searchTerms: [
       "Johann Sebastian Bach",
@@ -718,165 +718,165 @@ export const GENRES: Genre[] = [
 // ─── Temi visivi ──────────────────────────────────────────────────────────────
 
 export const GENRE_THEMES: Record<string, GenreTheme> = {
-  // Pop
+  // Pop — neon pink / cyan / magenta ben distinti
   pop: {
-    accent: "#ff6eb4",
-    accentGlow: "#ff6eb440",
-    bg: "#130008",
+    accent: "#ff2d78",
+    accentGlow: "#ff2d7860",
+    bg: "#120006",
     bgSurface: "#1e000f",
   },
   "brit-pop": {
-    accent: "#e8c84a",
-    accentGlow: "#e8c84a40",
-    bg: "#100e00",
+    accent: "#ffe600",
+    accentGlow: "#ffe60060",
+    bg: "#0f0d00",
     bgSurface: "#1a1800",
   },
   kpop: {
-    accent: "#ff85c8",
-    accentGlow: "#ff85c840",
+    accent: "#ff00cc",
+    accentGlow: "#ff00cc60",
     bg: "#130010",
     bgSurface: "#200018",
   },
-  // Rock
+  // Rock — rosso fuoco / arancio elettrico / verde acido / azzurro
   rock: {
-    accent: "#ff4500",
-    accentGlow: "#ff450040",
+    accent: "#ff3300",
+    accentGlow: "#ff330060",
     bg: "#130200",
     bgSurface: "#1e0500",
   },
   "hard-rock": {
-    accent: "#ff6a00",
-    accentGlow: "#ff6a0040",
+    accent: "#ff7700",
+    accentGlow: "#ff770060",
     bg: "#110200",
     bgSurface: "#1c0400",
   },
   "stoner-rock": {
-    accent: "#a8c400",
-    accentGlow: "#a8c40040",
+    accent: "#ccff00",
+    accentGlow: "#ccff0060",
     bg: "#080c00",
     bgSurface: "#111500",
   },
   "post-rock": {
-    accent: "#7eb8d4",
-    accentGlow: "#7eb8d440",
+    accent: "#00cfff",
+    accentGlow: "#00cfff60",
     bg: "#020c10",
     bgSurface: "#04141c",
   },
-  // Metal
+  // Metal — argento brillante / rosso laser / porpora acceso / viola freddo
   metal: {
-    accent: "#cccccc",
-    accentGlow: "#cccccc40",
+    accent: "#e8e8ff",
+    accentGlow: "#e8e8ff50",
     bg: "#080808",
-    bgSurface: "#121212",
+    bgSurface: "#111118",
   },
   "trash-metal": {
-    accent: "#ff2200",
-    accentGlow: "#ff220040",
+    accent: "#ff0022",
+    accentGlow: "#ff002260",
     bg: "#100000",
     bgSurface: "#1a0000",
   },
   "death-metal": {
-    accent: "#8b0000",
-    accentGlow: "#8b000060",
+    accent: "#cc0000",
+    accentGlow: "#cc000060",
     bg: "#0a0000",
-    bgSurface: "#120000",
+    bgSurface: "#140000",
   },
   "black-metal": {
-    accent: "#4a4a6a",
-    accentGlow: "#4a4a6a50",
-    bg: "#030308",
-    bgSurface: "#07070f",
+    accent: "#7755ff",
+    accentGlow: "#7755ff50",
+    bg: "#03030a",
+    bgSurface: "#08081a",
   },
-  // Hip-Hop
+  // Hip-Hop — oro / arancio neon
   rap: {
-    accent: "#ffd700",
-    accentGlow: "#ffd70040",
+    accent: "#ffd000",
+    accentGlow: "#ffd00060",
     bg: "#0f0d00",
     bgSurface: "#1a1500",
   },
   hiphop: {
-    accent: "#ff8c00",
-    accentGlow: "#ff8c0040",
+    accent: "#ff6600",
+    accentGlow: "#ff660060",
     bg: "#0f0700",
     bgSurface: "#1a0e00",
   },
-  // Electronic
+  // Electronic — verde acqua / verde lime
   electronic: {
-    accent: "#00ffcc",
-    accentGlow: "#00ffcc40",
+    accent: "#00ffe0",
+    accentGlow: "#00ffe060",
     bg: "#00100d",
     bgSurface: "#001a15",
   },
   dub: {
-    accent: "#2de89a",
-    accentGlow: "#2de89a40",
+    accent: "#00ff66",
+    accentGlow: "#00ff6660",
     bg: "#001209",
     bgSurface: "#001e10",
   },
-  // Jazz
+  // Jazz — ambra calda
   jazz: {
-    accent: "#c8a96e",
-    accentGlow: "#c8a96e40",
+    accent: "#ffaa00",
+    accentGlow: "#ffaa0060",
     bg: "#0d0900",
     bgSurface: "#1a1200",
   },
   // Soul
   rnb: {
-    accent: "#b06aff",
-    accentGlow: "#b06aff40",
+    accent: "#cc44ff",
+    accentGlow: "#cc44ff60",
     bg: "#0d0020",
     bgSurface: "#160030",
   },
   funk: {
-    accent: "#ff9a3c",
-    accentGlow: "#ff9a3c40",
+    accent: "#ff8800",
+    accentGlow: "#ff880060",
     bg: "#100600",
     bgSurface: "#1a0e00",
   },
-  // Blues
+  // Blues — blu elettrico
   blues: {
-    accent: "#4488ff",
-    accentGlow: "#4488ff40",
+    accent: "#2266ff",
+    accentGlow: "#2266ff60",
     bg: "#000820",
     bgSurface: "#000f30",
   },
-  // Folk
+  // Folk — terra/ocra distinti
   folk: {
-    accent: "#c8a26a",
-    accentGlow: "#c8a26a40",
+    accent: "#dd9933",
+    accentGlow: "#dd993360",
     bg: "#0d0800",
     bgSurface: "#181200",
   },
   country: {
-    accent: "#d4a843",
-    accentGlow: "#d4a84340",
+    accent: "#ffcc44",
+    accentGlow: "#ffcc4460",
     bg: "#0d0800",
     bgSurface: "#1a1200",
   },
   // Punk
   punk: {
-    accent: "#ff1493",
-    accentGlow: "#ff149340",
+    accent: "#ff0088",
+    accentGlow: "#ff008860",
     bg: "#130010",
     bgSurface: "#1e0018",
   },
   "hardcore-punk": {
-    accent: "#ff3300",
-    accentGlow: "#ff330040",
+    accent: "#ff2200",
+    accentGlow: "#ff220060",
     bg: "#100100",
     bgSurface: "#190200",
   },
   // Reggae
   reggae: {
-    accent: "#44cc44",
-    accentGlow: "#44cc4440",
+    accent: "#00ee44",
+    accentGlow: "#00ee4460",
     bg: "#020d02",
     bgSurface: "#041504",
   },
-  // Classical
+  // Classical — bianco caldo
   classical: {
-    accent: "#e8d5b0",
-    accentGlow: "#e8d5b040",
+    accent: "#fff0cc",
+    accentGlow: "#fff0cc40",
     bg: "#0d0c08",
     bgSurface: "#181610",
   },

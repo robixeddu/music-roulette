@@ -214,7 +214,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
           className={styles.score}
           aria-label={`Punteggio: ${formatScore(gameState.score, level.winScore)}`}
         >
-          <span aria-hidden="true">🎯 {formatScore(gameState.score, level.winScore)}</span>
+          <span aria-hidden="true">{formatScore(gameState.score, level.winScore)}</span>
         </div>
       </header>
 
