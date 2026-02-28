@@ -47,9 +47,6 @@ export function ChoiceList({ options, selectedId, result, onSelect, disabled }: 
             aria-pressed={isSelected}
           >
             <span className={styles.label}>
-              {isCorrectAfterWrong && (
-                <span className={styles.wasCorrectHint}>ERA: </span>
-              )}
               {option.label}
             </span>
             {showFeedback && (

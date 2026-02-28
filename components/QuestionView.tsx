@@ -20,7 +20,9 @@ export function QuestionView({ questionPromise, selectedId, onSelect, onFirstPla
 
   // Focus automatico sul bottone play ad ogni nuova domanda
   useEffect(() => {
-    playBtnRef.current?.focus()
+    // rAF garantisce che il focus arrivi dopo che il browser ha finito di renderizzare
+    const id = requestAnimationFrame(() => playBtnRef.current?.focus())
+    return () => cancelAnimationFrame(id)
   }, [question])
 
   const result = selectedId === null

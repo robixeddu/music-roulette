@@ -175,19 +175,42 @@ export function pickQuestionTracks(
   fakeCount = 3,
   usedIds: Set<number> = new Set()
 ): { correct: iTunesTrack; fakes: iTunesTrack[] } {
-  // Filtra i brani già usati come correct in domande precedenti
+  // Filtra i brani già usati (correct + fake delle domande precedenti)
   const available = tracks.filter(t => !usedIds.has(t.trackId))
 
-  // Se il pool disponibile è esaurito, ricomincia dall'inizio (fallback)
+  // Fallback se il pool disponibile è esaurito
   const pool = available.length >= fakeCount + 1 ? available : tracks
 
   if (pool.length < fakeCount + 1) {
     throw new Error('Pool di brani troppo piccolo per costruire una domanda')
   }
 
+  // Scegli la correct
   const correctIndex = Math.floor(Math.random() * pool.length)
   const correct = pool[correctIndex]
-  const fakes = shuffleArray(pool.filter((_, i) => i !== correctIndex)).slice(0, fakeCount)
+  const correctArtist = correct.artistName.toLowerCase()
+
+  // Fake: artista diverso dalla correct, un brano per artista
+  const usedFakeArtists = new Set<string>([correctArtist])
+  const fakes: iTunesTrack[] = []
+
+  for (const track of shuffleArray(pool.filter((_, i) => i !== correctIndex))) {
+    if (fakes.length >= fakeCount) break
+    const artist = track.artistName.toLowerCase()
+    if (usedFakeArtists.has(artist)) continue
+    usedFakeArtists.add(artist)
+    fakes.push(track)
+  }
+
+  // Fallback: se non ci sono abbastanza artisti diversi, riempi senza vincolo artista
+  if (fakes.length < fakeCount) {
+    const used = new Set([correct.trackId, ...fakes.map(f => f.trackId)])
+    for (const track of shuffleArray(pool)) {
+      if (fakes.length >= fakeCount) break
+      if (!used.has(track.trackId)) fakes.push(track)
+    }
+  }
+
   return { correct, fakes }
 }
 

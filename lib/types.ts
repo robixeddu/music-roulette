@@ -4,6 +4,7 @@ export interface Genre {
   id: string
   name: string
   emoji: string
+  group: string        // categoria per raggruppamento visivo nella griglia
   searchTerms: string[]
 }
 
