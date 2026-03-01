@@ -20,11 +20,12 @@ export type GameMode =
   | { type: 'genre'; genreId: string }
   | { type: 'artist'; artistName: string }
 
-function fetchQuestion(mode: GameMode, usedIds: Set<number>): Promise<TrackQuestion> {
+function fetchQuestion(mode: GameMode, usedIds: Set<number>, usedArtists: Set<string> = new Set()): Promise<TrackQuestion> {
   const params = new URLSearchParams()
   if (mode.type === 'artist') params.set('artistName', mode.artistName)
   else params.set('genreId', mode.genreId)
   if (usedIds.size > 0) params.set('usedIds', Array.from(usedIds).join(','))
+  if (mode.type !== 'artist' && usedArtists.size > 0) params.set('usedArtists', Array.from(usedArtists).join('||'))
   return fetch(`/api/track?${params}`, { cache: 'no-store' }).then(res => {
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     return res.json()
@@ -88,6 +89,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
   useEffect(() => { setLevel(loadLevel()) }, [])
 
   const usedIdsRef         = useRef<Set<number>>(new Set())
+  const usedArtistsRef     = useRef<Set<string>>(new Set())
   const questionPromiseRef = useRef<Promise<TrackQuestion>>(firstQuestionPromise)
   const playStartRef       = useRef<number | null>(null)
   const timeSamplesRef     = useRef<number[]>([])
@@ -119,6 +121,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
 
   const restartGame = useCallback(() => {
     usedIdsRef.current = new Set()
+    usedArtistsRef.current = new Set()
     timeSamplesRef.current = []
     playStartRef.current = null
     prefetchRef.current = null
@@ -133,6 +136,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     router.replace(`/game?artistName=${encodeURIComponent(artistName)}`)
     const newMode: GameMode = { type: 'artist', artistName }
     usedIdsRef.current = new Set()
+    usedArtistsRef.current = new Set()
     timeSamplesRef.current = []
     playStartRef.current = null
     prefetchRef.current = null
@@ -173,7 +177,11 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
       // Prefetch immediato — in parallelo al delay visivo del feedback
       questionPromiseRef.current.then(q => {
         q.options.forEach(o => usedIdsRef.current.add(o.id))
-        prefetchRef.current = fetchQuestion(gameMode, usedIdsRef.current)
+        // Traccia sempre l'artista della correct — evita ripetizioni anche dopo risposta sbagliata
+        const correctLabel = q.options.find(o => o.isCorrect)?.label ?? ''
+        const correctArtist = correctLabel.includes(' — ') ? correctLabel.split(' — ')[0] : ''
+        if (correctArtist) usedArtistsRef.current.add(correctArtist)
+        prefetchRef.current = fetchQuestion(gameMode, usedIdsRef.current, usedArtistsRef.current)
       })
 
       setTimeout(() => nextQuestion(gameMode), level.feedbackDelayMs)

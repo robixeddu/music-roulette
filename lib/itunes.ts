@@ -173,13 +173,24 @@ export async function fetchTracksByArtist(artistName: string): Promise<iTunesTra
 export function pickQuestionTracks(
   tracks: iTunesTrack[],
   fakeCount = 3,
-  usedIds: Set<number> = new Set()
+  usedIds: Set<number> = new Set(),
+  usedArtists: Set<string> = new Set()
 ): { correct: iTunesTrack; fakes: iTunesTrack[] } {
-  // Filtra i brani già usati (correct + fake delle domande precedenti)
-  const available = tracks.filter(t => !usedIds.has(t.trackId))
+  // Normalizza artisti usati per confronto case-insensitive
+  const usedArtistsNorm = new Set([...usedArtists].map(a => a.toLowerCase()))
 
-  // Fallback se il pool disponibile è esaurito
-  const pool = available.length >= fakeCount + 1 ? available : tracks
+  // Filtra brani già usati per id E per artista (un brano per band per partita)
+  const available = tracks.filter(t =>
+    !usedIds.has(t.trackId) &&
+    !usedArtistsNorm.has(t.artistName.toLowerCase())
+  )
+
+  // Fallback progressivo: prima solo usedIds, poi nessun filtro
+  const pool = available.length >= fakeCount + 1
+    ? available
+    : tracks.filter(t => !usedIds.has(t.trackId)).length >= fakeCount + 1
+      ? tracks.filter(t => !usedIds.has(t.trackId))
+      : tracks
 
   if (pool.length < fakeCount + 1) {
     throw new Error('Pool di brani troppo piccolo per costruire una domanda')

@@ -57,6 +57,31 @@ npm run test:e2e   # E2E tests (Playwright)
 
 ---
 
+## Scoring
+
+Each correct answer scores points based on three multipliers:
+
+```
+points = levelMultiplier × timeMultiplier × streakMultiplier
+```
+
+**Time multiplier** — continuous curve, faster = more (×3.0 at 0s → ×0.5 at 30s+)
+
+**Streak multiplier** — consecutive correct answers without mistakes:
+
+| Streak | Bonus |
+|--------|-------|
+| 1–2 | ×1.0 |
+| 3–4 | ×1.5 |
+| 5–6 | ×2.0 |
+| 7+ | ×2.5 |
+
+**Lives bonus** — on level completion: `livesLeft × 10 × levelMultiplier`
+
+**Session score** accumulates across all levels. Playing cleanly through Rookie and Arcade compounds into a significant advantage at Expert and Master. Two players reaching Master with the same answer count but different streaks can score 60–150% apart.
+
+---
+
 ## Project structure
 
 ```
@@ -67,14 +92,14 @@ app/
 ├── leaderboard/page.tsx     Hall of Fame — top 50, tabs: Global / Genres / Artists
 └── api/
     ├── artists/route.ts     Artist autocomplete
-    ├── track/route.ts       Question fetch
+    ├── track/route.ts       Question fetch (deduplicates by track id and artist)
     └── leaderboard/route.ts GET top50 + eligibility check, POST score
 
 components/
-├── GameController.tsx       Game state orchestrator
-├── QuestionView.tsx         Question + player + choices
-├── AudioPlayer.tsx          Accessible player with autoplay
-├── ChoiceList.tsx           4 answer options
+├── GameController.tsx       Game state, prefetch, streak display, session score
+├── QuestionView.tsx         Question + player + choices (stops audio on answer)
+├── AudioPlayer.tsx          Accessible player with autoplay and stopSignal
+├── ChoiceList.tsx           4 answer options with CSS feedback states
 ├── GenreGrid.tsx            Genre selection grid (25 genres, grouped)
 ├── GameOver.tsx             End-of-game screen + leaderboard modal
 ├── Prize.tsx                Level completion screen
@@ -83,11 +108,13 @@ components/
 lib/
 ├── i18n.ts                  Translations: it · en · es · fr · de
 ├── genres.ts                25 genres with neon color themes
-├── levels.ts                Level config and scoring
+├── levels.ts                Level config, time/streak/lives bonus scoring
+├── game-utils.ts            applyGuess (streak + sessionScore), pure game logic
+├── itunes.ts                Track fetching, artist deduplication across questions
 └── ...
 
 hooks/
-└── useLocale.ts             Browser language detection
+└── useLocale.ts             Browser language detection (post-mount, no hydration issues)
 ```
 
 ---
@@ -95,16 +122,13 @@ hooks/
 ## Internationalisation
 
 The UI adapts automatically to the browser language.  
-Supported languages: 🇮🇹 Italian · 🇬🇧 English · 🇪🇸 Spanish · 🇫🇷 French · 🇩🇪 German
+Supported: 🇮🇹 Italian · 🇬🇧 English · 🇪🇸 Spanish · 🇫🇷 French · 🇩🇪 German
 
-Genre names and level names remain unchanged across all languages.
+Genre and level names are not translated.
 
 ---
 
 ## Leaderboard
 
-Scores are calculated by combining:
-- **Correct answers** × **level multiplier**
-- **Speed multiplier** — answering faster scores more (from ×3.0 down to ×0.5)
-
-The leaderboard is split into three views: **Global**, **by Genre**, **by Artist**.
+Scores split into three views: **Global**, **by Genre**, **by Artist**.  
+Detection is client-side: entries where `genre` matches a known genre id/name go to Genres, everything else (artist names) goes to Artists.

@@ -11,6 +11,7 @@ import { getGenreById, GENRES } from '@/lib/genres'
 // Limiti di input
 const MAX_ARTIST_NAME_LEN = 100
 const MAX_USED_IDS        = 200  // max id tracciabili per sessione
+const MAX_USED_ARTISTS    = 100  // max artisti tracciabili per sessione
 const MAX_GENRE_ID_LEN    = 50
 
 /**
@@ -37,9 +38,19 @@ export async function GET(request: NextRequest) {
   const usedIds = new Set<number>(
     usedIdsParam
       .split(',')
-      .slice(0, MAX_USED_IDS)          // ignora oltre il limite
+      .slice(0, MAX_USED_IDS)
       .map(s => parseInt(s.trim(), 10))
       .filter(n => Number.isInteger(n) && n > 0)
+  )
+
+  // Sanifica usedArtists
+  const usedArtistsParam = searchParams.get('usedArtists') ?? ''
+  const usedArtists = new Set<string>(
+    usedArtistsParam
+      .split('||')
+      .slice(0, MAX_USED_ARTISTS)
+      .map(s => s.trim())
+      .filter(Boolean)
   )
 
   try {
@@ -59,7 +70,7 @@ export async function GET(request: NextRequest) {
     // Modalità genere (default)
     const genre = getGenreById(genreId ?? '') ?? GENRES[0]
     const tracks = await fetchTracksByGenre(genre.searchTerms)
-    const { correct, fakes } = pickQuestionTracks(tracks, 3, usedIds)
+    const { correct, fakes } = pickQuestionTracks(tracks, 3, usedIds, usedArtists)
     const question = buildQuestion(correct, fakes)
     return NextResponse.json(question, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
