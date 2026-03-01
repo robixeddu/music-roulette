@@ -55,6 +55,12 @@ body {
 /* ─── Global utilities ───────────────────────────────────────────────────── */
 /* Queste classi sono usate in JSX direttamente come stringhe globali */
 
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

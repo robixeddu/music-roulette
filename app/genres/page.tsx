@@ -10,7 +10,7 @@ export default function GenresPage() {
   const { t } = useLocale()
 
   return (
-    <div className={styles.page}>
+    <div className="page">
       <AppNav backHref="/" backLabel={t('nav.back.home')} title="Music Roulette" />
       <div className={styles.content}>
         <header className={styles.header}>

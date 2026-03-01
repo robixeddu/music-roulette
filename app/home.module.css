@@ -67,22 +67,9 @@
   width: 100%;
 }
 
-.divider {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
+/* .divider è definito in globals.css */
 
-.leaderboardLink {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  text-decoration: none;
-  letter-spacing: 0.05em;
-  transition: color 0.15s;
-}
-.leaderboardLink:hover { color: var(--accent-primary); }
+/* .leaderboardLink è definito in globals.css */
 
 /* Compact layout for small screens (iPhone 12 mini) */
 @media (max-height: 740px) and (max-width: 480px) {

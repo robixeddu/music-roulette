@@ -47,11 +47,11 @@ npm run test:e2e   # E2E tests (Playwright)
 
 ## How to play
 
-1. Choose a **music genre** or search for a **specific artist**
-2. Listen to the 30-second preview
+1. Choose one of **41 music genres** or search for a **specific artist**
+2. Listen to the 30-second preview — it autoplays
 3. Guess the artist and title from 4 options
 4. You have **3 lives** — each mistake costs one
-5. Complete the level and climb to **Master** to enter the leaderboard
+5. Complete all 4 levels to enter the leaderboard
 
 **4 difficulty levels:** Rookie → Arcade → Expert → Master (×5 multiplier)
 
@@ -65,12 +65,17 @@ Each correct answer scores points based on three multipliers:
 points = levelMultiplier × timeMultiplier × streakMultiplier
 ```
 
-**Time multiplier** — continuous curve, faster = more (×3.0 at 0s → ×0.5 at 30s+)
+**Time multiplier** — continuous linear curve, faster = more:
 
-**Streak multiplier** — consecutive correct answers without mistakes:
+```
+max(0.5, 3.0 − (seconds / 30) × 2.5)
+0s → ×3.00  ·  10s → ×2.17  ·  20s → ×1.33  ·  30s+ → ×0.50
+```
 
-| Streak | Bonus |
-|--------|-------|
+**Streak multiplier** — consecutive correct answers:
+
+| Streak | Multiplier |
+|--------|-----------|
 | 1–2 | ×1.0 |
 | 3–4 | ×1.5 |
 | 5–6 | ×2.0 |
@@ -78,7 +83,28 @@ points = levelMultiplier × timeMultiplier × streakMultiplier
 
 **Lives bonus** — on level completion: `livesLeft × 10 × levelMultiplier`
 
-**Session score** accumulates across all levels. Playing cleanly through Rookie and Arcade compounds into a significant advantage at Expert and Master. Two players reaching Master with the same answer count but different streaks can score 60–150% apart.
+**Session score** accumulates across all 4 levels. Two players reaching Master with the same answer count but different streaks can score 60–150% apart.
+
+---
+
+## Genres (41)
+
+| Group | Genres |
+|-------|--------|
+| Pop | Pop, Brit Pop, K-Pop, Indie Pop |
+| Rock | Rock, Grunge, Psychedelic Rock, Noise Rock, Alternative, Hard Rock, Stoner Rock, Post Rock |
+| Metal | Metal, Thrash Metal, Death Metal, Black Metal |
+| Hip-Hop | Rap, Hip-Hop |
+| Electronic | Electronic, Electro / Ambient |
+| Jazz | Jazz |
+| Soul | R&B, Funk & Soul, Disco, Motown, Gospel & Soul, Afrobeat, Latin |
+| Blues | Blues |
+| Folk | Folk, Country |
+| Punk | Punk, Hardcore, Post-Hardcore, Emo, Post-Punk, New Wave |
+| Reggae | Reggae, Dub, Ska |
+| Classical | Classical |
+
+Each genre has 30 hand-curated artists verified for iTunes preview availability.
 
 ---
 
@@ -87,11 +113,11 @@ points = levelMultiplier × timeMultiplier × streakMultiplier
 ```
 app/
 ├── page.tsx                 Homepage
-├── genres/page.tsx          Genre selection
+├── genres/page.tsx          Genre selection (41 genres, grouped)
 ├── game/page.tsx            Game (RSC async, first question server-side)
 ├── leaderboard/page.tsx     Hall of Fame — top 50, tabs: Global / Genres / Artists
 └── api/
-    ├── artists/route.ts     Artist autocomplete
+    ├── artists/route.ts     Artist autocomplete → iTunes musicArtist search
     ├── track/route.ts       Question fetch (deduplicates by track id and artist)
     └── leaderboard/route.ts GET top50 + eligibility check, POST score
 
@@ -100,17 +126,17 @@ components/
 ├── QuestionView.tsx         Question + player + choices (stops audio on answer)
 ├── AudioPlayer.tsx          Accessible player with autoplay and stopSignal
 ├── ChoiceList.tsx           4 answer options with CSS feedback states
-├── GenreGrid.tsx            Genre selection grid (25 genres, grouped)
+├── GenreGrid.tsx            Genre selection grid (41 genres, grouped by category)
 ├── GameOver.tsx             End-of-game screen + leaderboard modal
 ├── Prize.tsx                Level completion screen
 └── ...
 
 lib/
-├── i18n.ts                  Translations: it · en · es · fr · de
-├── genres.ts                25 genres with neon color themes
+├── i18n.ts                  Translations: it · en · es · fr · de (~72 keys)
+├── genres.ts                41 genres with iTunes-first artist lists and neon color themes
 ├── levels.ts                Level config, time/streak/lives bonus scoring
-├── game-utils.ts            applyGuess (streak + sessionScore), pure game logic
-├── itunes.ts                Track fetching, artist deduplication across questions
+├── game-utils.ts            applyGuess (streak + sessionScore), getPrize (returns i18n key)
+├── itunes.ts                Track fetching, NFKD normalization, artist deduplication
 └── ...
 
 hooks/
@@ -124,7 +150,8 @@ hooks/
 The UI adapts automatically to the browser language.  
 Supported: 🇮🇹 Italian · 🇬🇧 English · 🇪🇸 Spanish · 🇫🇷 French · 🇩🇪 German
 
-Genre and level names are not translated.
+Genre and level names are not translated.  
+All UI strings go through `t()` from `useLocale` — no hardcoded strings in components.
 
 ---
 
@@ -132,3 +159,5 @@ Genre and level names are not translated.
 
 Scores split into three views: **Global**, **by Genre**, **by Artist**.  
 Detection is client-side: entries where `genre` matches a known genre id/name go to Genres, everything else (artist names) goes to Artists.
+
+Top 50 only. Server re-verifies eligibility before INSERT to prevent race conditions.

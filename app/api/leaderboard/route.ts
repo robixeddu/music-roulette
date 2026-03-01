@@ -36,8 +36,8 @@ function getIp(req: NextRequest): string {
 }
 
 /**
- * GET /api/leaderboard         — top 50 punteggi
- * GET /api/leaderboard?check=N — controlla se N entra nella top 50 (senza caricare tutto)
+ * GET /api/leaderboard         — top 30 punteggi
+ * GET /api/leaderboard?check=N — controlla se N entra nella top 30 (senza caricare tutto)
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)

@@ -1,8 +1,4 @@
-.page {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-}
+/* .page è definito in globals.css */
 
 .content {
   flex: 1;
@@ -51,21 +47,7 @@
 .boneScore    { width: 2rem;  height: 1.1rem; border-radius: 4px; margin-left: auto; }
 .boneTime     { width: 3rem;  height: 0.75rem; border-radius: 4px; margin-left: auto; margin-top: 0.2rem; }
 
-.bone {
-  background: linear-gradient(
-    90deg,
-    var(--bg-surface) 25%,
-    var(--bg-elevated) 50%,
-    var(--bg-surface) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  from { background-position: 200% 0; }
-  to   { background-position: -200% 0; }
-}
+/* .bone e @keyframes shimmer definiti in globals.css */
 
 /* Empty state */
 .empty {

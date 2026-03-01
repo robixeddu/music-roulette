@@ -6,7 +6,6 @@ import { GameNav } from '@/components/GameNav'
 import { getThemeForGenre, getGenreById, GENRES, DEFAULT_THEME } from '@/lib/genres'
 import type { Metadata } from 'next'
 import type { TrackQuestion } from '@/lib/types'
-import styles from './game.module.css'
 
 export const metadata: Metadata = { title: 'Gioca — Music Roulette' }
 
@@ -48,7 +47,7 @@ export default async function GamePage({ searchParams }: GamePageProps) {
 
   return (
     <ThemeProvider theme={theme}>
-      <div className={styles.page}>
+      <div className="page">
         <GameNav mode={artistName ? 'artist' : 'genre'} title={navTitle} />
         <Suspense fallback={<GameSkeleton />}>
           <GameController firstQuestionPromise={firstQuestionPromise} gameMode={mode} />

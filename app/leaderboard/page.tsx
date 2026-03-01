@@ -88,7 +88,7 @@ export default function LeaderboardPage() {
   ]
 
   return (
-    <div className={styles.page}>
+    <div className="page">
       <AppNav backHref="/" backLabel="Home" title="Music Roulette" />
 
       <div className={styles.content}>

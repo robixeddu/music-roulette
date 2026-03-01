@@ -1,16 +1,1 @@
-.divider {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.leaderboardLink {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  text-decoration: none;
-  letter-spacing: 0.05em;
-  transition: color 0.15s;
-}
-.leaderboardLink:hover { color: var(--accent-primary); }
+/* .divider e .leaderboardLink sono definiti in globals.css */
