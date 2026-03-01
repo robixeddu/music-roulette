@@ -1,51 +1,64 @@
 import { applyGuess, getPrize, isGameOver, formatScore, makeInitialState } from '@/lib/game-utils'
 import type { GameState } from '@/lib/types'
 import { MAX_LIVES } from '@/lib/types'
+import { LEVELS } from '@/lib/levels'
 
-// WIN_SCORE ora è per livello — usiamo il valore del livello Rookie (5) come riferimento nei test
 const WIN_SCORE = 5
+const ROOKIE = LEVELS[0] // { id:1, name:'Rookie', multiplier:1, ... }
 const INITIAL_GAME_STATE = makeInitialState()
 
 // ─── applyGuess ──────────────────────────────────────────────────────────────
 
 describe('applyGuess', () => {
   it('incrementa lo score quando la risposta è corretta', () => {
-    const next = applyGuess(INITIAL_GAME_STATE, true, WIN_SCORE)
+    const next = applyGuess(INITIAL_GAME_STATE, true, WIN_SCORE, ROOKIE, null)
     expect(next.score).toBe(1)
     expect(next.lives).toBe(MAX_LIVES)
     expect(next.status).toBe('playing')
   })
 
+  it('incrementa streak e sessionScore sulla risposta corretta', () => {
+    const next = applyGuess(INITIAL_GAME_STATE, true, WIN_SCORE, ROOKIE, null)
+    expect(next.streak).toBe(1)
+    expect(next.sessionScore).toBeGreaterThan(0)
+  })
+
   it('decrementa le vite quando la risposta è sbagliata', () => {
-    const next = applyGuess(INITIAL_GAME_STATE, false, WIN_SCORE)
+    const next = applyGuess(INITIAL_GAME_STATE, false, WIN_SCORE, ROOKIE, null)
     expect(next.lives).toBe(MAX_LIVES - 1)
     expect(next.score).toBe(0)
     expect(next.status).toBe('playing')
   })
 
+  it('azzera la streak sulla risposta sbagliata', () => {
+    const withStreak: GameState = { ...INITIAL_GAME_STATE, streak: 5 }
+    const next = applyGuess(withStreak, false, WIN_SCORE, ROOKIE, null)
+    expect(next.streak).toBe(0)
+  })
+
   it('imposta status "won" quando si raggiunge WIN_SCORE', () => {
     const almostWon: GameState = { ...INITIAL_GAME_STATE, score: WIN_SCORE - 1 }
-    const next = applyGuess(almostWon, true, WIN_SCORE)
+    const next = applyGuess(almostWon, true, WIN_SCORE, ROOKIE, null)
     expect(next.status).toBe('won')
     expect(next.score).toBe(WIN_SCORE)
   })
 
   it('imposta status "lost" quando le vite finiscono', () => {
     const lastLife: GameState = { ...INITIAL_GAME_STATE, lives: 1 }
-    const next = applyGuess(lastLife, false, WIN_SCORE)
+    const next = applyGuess(lastLife, false, WIN_SCORE, ROOKIE, null)
     expect(next.status).toBe('lost')
     expect(next.lives).toBe(0)
   })
 
   it('non modifica lo stato se il gioco è già finito', () => {
-    const won: GameState = { lives: 3, score: WIN_SCORE, status: 'won' }
-    expect(applyGuess(won, true, WIN_SCORE)).toEqual(won)
-    expect(applyGuess(won, false, WIN_SCORE)).toEqual(won)
+    const won: GameState = { lives: 3, score: WIN_SCORE, streak: 0, sessionScore: 0, status: 'won' }
+    expect(applyGuess(won, true, WIN_SCORE, ROOKIE, null)).toEqual(won)
+    expect(applyGuess(won, false, WIN_SCORE, ROOKIE, null)).toEqual(won)
   })
 
   it('le vite non scendono sotto 0', () => {
     const noLives: GameState = { ...INITIAL_GAME_STATE, lives: 1 }
-    const next = applyGuess(noLives, false, WIN_SCORE)
+    const next = applyGuess(noLives, false, WIN_SCORE, ROOKIE, null)
     expect(next.lives).toBe(0)
     expect(next.status).toBe('lost')
   })

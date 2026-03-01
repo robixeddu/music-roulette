@@ -39,15 +39,6 @@ export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4, playBtnRef, 
   }, [src])
 
   useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
-  // Stoppa l'audio quando l'utente ha risposto
-  useEffect(() => {
-    if (!stopSignal) return
-    const audio = audioRef.current
-    if (!audio) return
-    audio.pause()
-    stopFadeLoop()
-  }, [stopSignal, stopFadeLoop])
-
 
 
   // Autoplay: tenta play() appena l'audio è pronto
@@ -86,6 +77,15 @@ export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4, playBtnRef, 
   const stopFadeLoop = useCallback(() => {
     if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
   }, [])
+
+  // Stoppa l'audio quando l'utente ha risposto
+  useEffect(() => {
+    if (!stopSignal) return
+    const audio = audioRef.current
+    if (!audio) return
+    audio.pause()
+    stopFadeLoop()
+  }, [stopSignal, stopFadeLoop])
 
   const togglePlay = useCallback(async () => {
     const audio = audioRef.current
