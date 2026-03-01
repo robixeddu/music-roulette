@@ -10,11 +10,12 @@ interface AudioPlayerProps {
   fadeOutSeconds?: number
   playBtnRef?: RefObject<HTMLButtonElement | null>
   autoplay?: boolean
+  stopSignal?: boolean  // se true, stoppa e congela il player
 }
 
 type LoadState = 'loading' | 'ready' | 'error'
 
-export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4, playBtnRef, autoplay = false }: AudioPlayerProps) {
+export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4, playBtnRef, autoplay = false, stopSignal = false }: AudioPlayerProps) {
   const { t } = useLocale()
   const audioRef      = useRef<HTMLAudioElement>(null)
   const internalBtnRef = useRef<HTMLButtonElement>(null)
@@ -38,6 +39,16 @@ export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4, playBtnRef, 
   }, [src])
 
   useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
+  // Stoppa l'audio quando l'utente ha risposto
+  useEffect(() => {
+    if (!stopSignal) return
+    const audio = audioRef.current
+    if (!audio) return
+    audio.pause()
+    stopFadeLoop()
+  }, [stopSignal, stopFadeLoop])
+
+
 
   // Autoplay: tenta play() appena l'audio è pronto
   useEffect(() => {

@@ -56,6 +56,7 @@ export function QuestionView({ questionPromise, selectedId, onSelect, onFirstPla
         onFirstPlay={onFirstPlay}
         playBtnRef={playBtnRef}
         autoplay={true}
+        stopSignal={selectedId !== null}
       />
 
       <p className="sr-only">{t('question.sr')}</p>
