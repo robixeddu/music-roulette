@@ -72,11 +72,11 @@ describe("ChoiceList", () => {
     for (const btn of buttons) {
       expect(btn).toBeDisabled();
     }
-    await user.click(buttons[0]).catch(() => {}); // disabled, non dovrebbe propagare
+    await user.click(buttons[0]).catch(() => {});
     expect(onSelect).not.toHaveBeenCalled();
   });
 
-  it("mostra ✓ sulla risposta corretta dopo la selezione", () => {
+  it("applica classe CSS 'correct' sulla risposta giusta dopo selezione sbagliata", () => {
     render(
       <ChoiceList
         options={options}
@@ -86,10 +86,12 @@ describe("ChoiceList", () => {
         disabled={true}
       />
     );
-    // La corretta (id=1) deve mostrare ✓
-    expect(screen.getByText("✓")).toBeInTheDocument();
-    // La sbagliata selezionata (id=2) deve mostrare ✗
-    expect(screen.getByText("✗")).toBeInTheDocument();
+    // Il bottone con la risposta corretta (id=1) deve avere la classe .correct
+    const correctBtn = screen.getByText("Artista A — Canzone A").closest("button");
+    expect(correctBtn?.className).toMatch(/correct/);
+    // Il bottone sbagliato selezionato (id=2) deve avere la classe .wrong
+    const wrongBtn = screen.getByText("Artista B — Canzone B").closest("button");
+    expect(wrongBtn?.className).toMatch(/wrong/);
   });
 
   it("nessun feedback visivo se selectedId è null", () => {
@@ -102,7 +104,9 @@ describe("ChoiceList", () => {
         disabled={false}
       />
     );
-    expect(screen.queryByText("✓")).not.toBeInTheDocument();
-    expect(screen.queryByText("✗")).not.toBeInTheDocument();
+    const buttons = screen.getAllByRole("button");
+    for (const btn of buttons) {
+      expect(btn.className).not.toMatch(/correct|wrong/);
+    }
   });
 });
