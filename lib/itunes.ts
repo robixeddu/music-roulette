@@ -232,8 +232,8 @@ export function buildQuestion(correct: iTunesTrack, fakes: iTunesTrack[]): Track
     .replace('100x100', '300x300')
 
   const options: TrackOption[] = shuffleArray([
-    { id: correct.trackId, label: `${correct.artistName} — ${correct.trackName}`, isCorrect: true },
-    ...fakes.map(f => ({ id: f.trackId, label: `${f.artistName} — ${f.trackName}`, isCorrect: false })),
+    { id: correct.trackId, label: `${correct.artistName} — ${correct.trackName}`, isCorrect: true, artistName: correct.artistName },
+    ...fakes.map(f => ({ id: f.trackId, label: `${f.artistName} — ${f.trackName}`, isCorrect: false, artistName: f.artistName })),
   ])
 
   return { previewUrl: correct.previewUrl, albumCover, options }
@@ -250,8 +250,8 @@ export function buildArtistQuestion(correct: iTunesTrack, fakes: iTunesTrack[]):
     .replace('100x100', '300x300')
 
   const options: TrackOption[] = shuffleArray([
-    { id: correct.trackId, label: correct.trackName, isCorrect: true },
-    ...fakes.map(f => ({ id: f.trackId, label: f.trackName, isCorrect: false })),
+    { id: correct.trackId, label: correct.trackName, isCorrect: true, artistName: correct.artistName },
+    ...fakes.map(f => ({ id: f.trackId, label: f.trackName, isCorrect: false, artistName: f.artistName })),
   ])
 
   return { previewUrl: correct.previewUrl, albumCover, options }

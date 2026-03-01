@@ -29,11 +29,11 @@ export default function HomePage() {
           <a href="/genres" className={`${btnStyles.btn} ${btnStyles.primary} ${btnStyles.large}`}>
             {t('home.btn.genre')}
           </a>
-          <div className={styles.divider} aria-hidden="true">
+          <div className="divider" aria-hidden="true">
             {t('home.or')}
           </div>
           <ArtistSearch />
-          <Link href="/leaderboard" className={styles.leaderboardLink}>
+          <Link href="/leaderboard" className="leaderboardLink">
             {t('home.leaderboard')}
           </Link>
         </div>

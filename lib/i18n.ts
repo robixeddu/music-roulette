@@ -108,6 +108,7 @@ export const TRANSLATIONS = {
     'lb.pos':               'Posizione {n}',
     'lb.empty':             'Nessun punteggio ancora.\nSii il primo a entrare in classifica!',
     'lb.playnow':           'Gioca ora',
+    'aria.loading.lb':          'Caricamento classifica...',
   },
 
   en: {
