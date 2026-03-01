@@ -68,16 +68,54 @@ export function getTimeMultiplierLabel(avgTimeMs: number | null): string {
   return `${icon} ×${m.toFixed(2)}`
 }
 
+
 /**
- * Calcola il punteggio classifica finale.
- * score = round(domande_vinte × moltiplicatore_livello × moltiplicatore_tempo_continuo)
+ * Moltiplicatore streak — premia le risposte consecutive corrette.
+ * streak 1-2  → ×1.0 (nessun bonus)
+ * streak 3-4  → ×1.5
+ * streak 5-6  → ×2.0
+ * streak 7+   → ×2.5
+ */
+export function getStreakMultiplier(streak: number): number {
+  if (streak >= 7) return 2.5
+  if (streak >= 5) return 2.0
+  if (streak >= 3) return 1.5
+  return 1.0
+}
+
+/**
+ * Punteggio per singola risposta corretta.
+ * points = round(levelMultiplier × timeMultiplier × streakMultiplier)
+ * Minimo 1 punto per risposta.
+ */
+export function calcAnswerScore(
+  level: Level,
+  avgTimeMs: number | null,
+  streak: number
+): number {
+  return Math.max(1, Math.round(
+    level.multiplier * getTimeMultiplier(avgTimeMs) * getStreakMultiplier(streak)
+  ))
+}
+
+/**
+ * Bonus vite rimanenti al completamento livello.
+ * livesLeft × 10 × moltiplicatore_livello
+ */
+export function calcLivesBonus(livesLeft: number, level: Level): number {
+  return livesLeft * 10 * level.multiplier
+}
+
+/**
+ * Punteggio classifica finale = sessionScore accumulato + bonus vite finali.
+ * sessionScore è già calcolato risposta per risposta in applyGuess.
  */
 export function calcLeaderboardScore(
-  wonQuestions: number,
-  level: Level,
-  avgTimeMs: number | null = null
+  sessionScore: number,
+  livesLeft: number,
+  level: Level
 ): number {
-  return Math.round(wonQuestions * level.multiplier * getTimeMultiplier(avgTimeMs))
+  return sessionScore + calcLivesBonus(livesLeft, level)
 }
 
 /** Legge il livello corrente da localStorage. Ritorna livello 1 se assente. */

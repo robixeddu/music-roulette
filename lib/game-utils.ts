@@ -3,19 +3,31 @@
  */
 import type { GameState } from './types'
 import { MAX_LIVES } from './types'
+import { calcAnswerScore } from './levels'
+import type { Level } from './levels'
 
 /**
  * Calcola il nuovo GameState dopo una risposta dell'utente.
- * winScore è il numero di risposte corrette per vincere (varia per livello).
+ * Accumula sessionScore risposta per risposta con streak e time multiplier.
  */
-export function applyGuess(state: GameState, isCorrect: boolean, winScore: number): GameState {
+export function applyGuess(
+  state: GameState,
+  isCorrect: boolean,
+  winScore: number,
+  level: Level,
+  avgTimeMs: number | null
+): GameState {
   if (state.status !== 'playing') return state
 
   if (isCorrect) {
+    const newStreak = state.streak + 1
+    const points = calcAnswerScore(level, avgTimeMs, newStreak)
     const newScore = state.score + 1
     return {
       ...state,
       score: newScore,
+      streak: newStreak,
+      sessionScore: state.sessionScore + points,
       status: newScore >= winScore ? 'won' : 'playing',
     }
   } else {
@@ -23,6 +35,7 @@ export function applyGuess(state: GameState, isCorrect: boolean, winScore: numbe
     return {
       ...state,
       lives: newLives,
+      streak: 0,
       status: newLives <= 0 ? 'lost' : 'playing',
     }
   }
@@ -48,7 +61,7 @@ export function isGameOver(state: GameState): boolean {
   return state.status === 'won' || state.status === 'lost'
 }
 
-/** Stato iniziale — sempre 3 vite, punteggio 0. */
-export function makeInitialState(): GameState {
-  return { lives: MAX_LIVES, score: 0, status: 'playing' }
+/** Stato iniziale — sempre 3 vite, punteggio 0, streak 0. */
+export function makeInitialState(sessionScore = 0): GameState {
+  return { lives: MAX_LIVES, score: 0, streak: 0, sessionScore, status: 'playing' }
 }

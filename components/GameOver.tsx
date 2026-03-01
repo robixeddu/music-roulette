@@ -138,7 +138,7 @@ export function GameOver({
           aria-label={t('gameover.modal.aria')}
           onClick={closeModal}
         >
-          <div className={styles.modal}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <button
               type="button"
               className={styles.modalClose}

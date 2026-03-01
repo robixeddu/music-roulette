@@ -56,7 +56,9 @@ export type GuessResult = 'idle' | 'correct' | 'wrong'
 
 export interface GameState {
   lives: number
-  score: number
+  score: number       // risposte corrette nel livello corrente
+  streak: number      // risposte corrette consecutive (si azzera su errore)
+  sessionScore: number // punteggio cumulativo accumulato nella sessione
   status: 'playing' | 'won' | 'lost'
 }
 
@@ -89,5 +91,7 @@ export const MAX_LIVES = 3
 export const INITIAL_GAME_STATE: GameState = {
   lives: MAX_LIVES,
   score: 0,
+  streak: 0,
+  sessionScore: 0,
   status: 'playing',
 }

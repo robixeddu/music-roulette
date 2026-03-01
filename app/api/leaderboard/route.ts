@@ -6,7 +6,9 @@ import { LEVELS } from '@/lib/levels'
 // ─── Whitelist valori validi ───────────────────────────────────────────────
 const VALID_LEVEL_IDS    = new Set(LEVELS.map(l => l.id))
 const VALID_LEVEL_NAMES  = new Set(LEVELS.map(l => l.name))
-const MAX_SCORE_POSSIBLE = Math.max(...LEVELS.map(l => l.winScore * l.multiplier * 3))
+// Massimo teorico sessione completa con streak 7+, velocità 0s, 3 vite per livello
+// ~1300 punti — margine generoso a 2000
+const MAX_SCORE_POSSIBLE = 2000
 
 // ─── Rate limiting in-memory ───────────────────────────────────────────────
 const rateMap = new Map<string, { count: number; resetAt: number }>()

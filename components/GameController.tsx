@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { TrackQuestion, TrackOption, GameState } from '@/lib/types'
 import { applyGuess, formatScore, makeInitialState } from '@/lib/game-utils'
 import { useLocale } from '@/hooks/useLocale'
-import { loadLevel, saveLevel, getNextLevel, calcLeaderboardScore, MAX_LEVEL } from '@/lib/levels'
+import { loadLevel, saveLevel, getNextLevel, calcLeaderboardScore, calcLivesBonus, MAX_LEVEL } from '@/lib/levels'
 import type { Level } from '@/lib/levels'
 import { QuestionView } from './QuestionView'
 import { LivesIndicator } from './LivesIndicator'
@@ -122,7 +122,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     timeSamplesRef.current = []
     playStartRef.current = null
     prefetchRef.current = null
-    setGameState(makeInitialState())
+    setGameState(makeInitialState(0))  // reset sessione completo
     setSelectedId(null)
     const p = fetchQuestion(gameMode, usedIdsRef.current)
     questionPromiseRef.current = p
@@ -137,7 +137,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     playStartRef.current = null
     prefetchRef.current = null
     setGameMode(newMode)
-    setGameState(makeInitialState())
+    setGameState(makeInitialState(0))
     setSelectedId(null)
     const p = fetchQuestion(newMode, usedIdsRef.current)
     questionPromiseRef.current = p
@@ -146,7 +146,14 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
 
   const advanceLevel = useCallback(() => {
     const next = getNextLevel(level)
-    if (next) { saveLevel(next); setLevel(next) }
+    if (next) {
+      saveLevel(next)
+      setLevel(next)
+      // Preserva sessionScore + bonus vite livello completato
+      setGameState(prev => makeInitialState(
+        prev.sessionScore + calcLivesBonus(prev.lives, level)
+      ))
+    }
   }, [level])
 
   const handleSelect = useCallback((option: TrackOption) => {
@@ -158,7 +165,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
 
     playFeedbackSound(option.isCorrect)
 
-    const newState = applyGuess(gameState, option.isCorrect, level.winScore)
+    const newState = applyGuess(gameState, option.isCorrect, level.winScore, level, getAvgTimeMs())
     if (newState.status === 'won') wonLevelRef.current = level
     setGameState(newState)
 
@@ -174,7 +181,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
   }, [selectedId, gameState, nextQuestion, gameMode, level])
 
   const avgTimeMs = getAvgTimeMs()
-  const leaderboardScore = calcLeaderboardScore(gameState.score, level, avgTimeMs)
+  const leaderboardScore = calcLeaderboardScore(gameState.sessionScore, gameState.lives, level)
 
   if (gameState.status === 'won') {
     if (wonLevelRef.current.id >= MAX_LEVEL) {
@@ -213,11 +220,18 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
         <div className={styles.levelBadge} aria-label={`Livello: ${level.name}`}>
           <span aria-hidden="true">{level.name}</span>
         </div>
-        <div
-          className={styles.score}
-          aria-label={t('game.score.aria', { score: formatScore(gameState.score, level.winScore) })}
-        >
-          <span aria-hidden="true">{formatScore(gameState.score, level.winScore)}</span>
+        <div className={styles.scoreGroup}>
+          {gameState.streak >= 3 && (
+            <div className={styles.streak} aria-label={`Streak: ${gameState.streak}`}>
+              <span aria-hidden="true">🔥 ×{gameState.streak}</span>
+            </div>
+          )}
+          <div
+            className={styles.score}
+            aria-label={t('game.score.aria', { score: formatScore(gameState.score, level.winScore) })}
+          >
+            <span aria-hidden="true">{formatScore(gameState.score, level.winScore)}</span>
+          </div>
         </div>
       </header>
 
