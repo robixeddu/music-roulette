@@ -142,8 +142,8 @@ export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4, playBtnRef, 
 
   const currentTime = duration ? (progress / 100) * duration : 0
   const isDisabled  = loadState !== 'ready'
-  const btnLabel    = loadState === 'loading' ? 'Caricamento audio...'
-    : loadState === 'error' ? 'Audio non disponibile'
+  const btnLabel    = loadState === 'loading' ? t('player.loading')
+    : loadState === 'error' ? t('player.unavailable')
     : isPlaying ? t('player.pause') : t('player.play')
 
   return (
@@ -176,7 +176,7 @@ export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4, playBtnRef, 
           <div className={styles.progressFill} style={{ width: `${progress}%` }} />
         </div>
         <span className={styles.time} aria-hidden="true">
-          {loadState === 'error' ? 'Preview non disponibile' : `${formatTime(currentTime)} / ${formatTime(duration)}`}
+          {loadState === 'error' ? t('player.preview.error') : `${formatTime(currentTime)} / ${formatTime(duration)}`}
         </span>
       </div>
     </div>

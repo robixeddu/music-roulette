@@ -42,12 +42,12 @@ export function applyGuess(
 }
 
 /** Genera il messaggio di vittoria in base al livello. */
-export function getPrize(levelName: string): { emoji: string; message: string } {
+export function getPrize(levelName: string): { emoji: string; messageKey: string } {
   switch (levelName) {
-    case 'Master':  return { emoji: '👑', message: 'Sei un Master della musica!' }
-    case 'Expert':  return { emoji: '🏆', message: 'Sei un vero esperto musicale!' }
-    case 'Arcade': return { emoji: '🥈', message: 'Ottimo, stai migliorando!' }
-    default:        return { emoji: '🎵', message: 'Bravo! Pronto per il livello successivo?' }
+    case 'Master':  return { emoji: '👑', messageKey: 'prize.msg.master' }
+    case 'Expert':  return { emoji: '🏆', messageKey: 'prize.msg.expert' }
+    case 'Arcade':  return { emoji: '🥈', messageKey: 'prize.msg.arcade' }
+    default:        return { emoji: '🎵', messageKey: 'prize.msg.default' }
   }
 }
 

@@ -126,7 +126,7 @@ export default function LeaderboardPage() {
         </div>
 
         {loading ? (
-          <div className={styles.loading} aria-label="Caricamento classifica">
+          <div className={styles.loading} aria-label={t('aria.loading.lb')}>
             {[...Array(5)].map((_, i) => (
               <div key={i} className={`${styles.entry} ${styles.entrySkeleton}`}>
                 <div className={`${styles.bone} ${styles.boneRank}`} />

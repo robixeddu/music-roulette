@@ -26,7 +26,6 @@ export const TRANSLATIONS = {
     // Generi page
     'genres.title':         'Scegli il genere',
     'genres.subtitle':      "Ascolta l'estratto e indovina artista e titolo",
-    'genres.play':          'Gioca con {name}',
 
     // Nav
     'nav.back.home':        'Home',
@@ -35,6 +34,13 @@ export const TRANSLATIONS = {
     // AudioPlayer
     'player.play':          'Riproduci estratto',
     'player.pause':         'Metti in pausa',
+    'player.loading':          'Caricamento audio...',
+    'player.unavailable':          'Audio non disponibile',
+    'player.preview.error':          'Preview non disponibile',
+    'game.error.msg':          'Impossibile caricare la canzone. Controlla la connessione e riprova.',
+    'aria.artist.suggestions':          'Suggerimenti artisti',
+    'aria.loading.track':          'Caricamento prossima canzone...',
+    'aria.search.close':          'Chiudi',
 
     // QuestionView
     'question.sr':          "Ascolta l'estratto e scegli l'artista e il titolo corretti tra le opzioni.",
@@ -51,6 +57,10 @@ export const TRANSLATIONS = {
     'prize.nextLevel':      'Prossimo livello:',
     'prize.answers':        '{n} risposte',
     'prize.multiplier':     'moltiplicatore ×{n}',
+    'prize.msg.master':          'Sei un Master della musica!',
+    'prize.msg.expert':          'Sei un vero esperto musicale!',
+    'prize.msg.arcade':          'Ottimo, stai migliorando!',
+    'prize.msg.default':          'Bravo! Pronto per il livello successivo?',
 
     // RetryButtons
     'retry.playAgain':      'Gioca ancora con {name}',
@@ -77,13 +87,11 @@ export const TRANSLATIONS = {
     // GameController / GameError
     'game.title':           'Gioca — Music Roulette',
     'game.score.aria':      'Punteggio: {score}',
-    'game.error.title':     'Errore nel caricamento',
     'game.error.retry':     'Riprova',
 
     // Search artist
     'search.placeholder':   'Cerca un artista...',
     'search.notfound':      'Nessun risultato per "{q}"',
-    'search.error':         'Errore nella ricerca. Riprova.',
 
     // Leaderboard
     'lb.title':             '🏆 Hall of Fame',
@@ -116,13 +124,20 @@ export const TRANSLATIONS = {
 
     'genres.title':         'Choose a genre',
     'genres.subtitle':      'Listen to the preview and guess the artist and title',
-    'genres.play':          'Play with {name}',
 
     'nav.back.home':        'Home',
     'nav.back.genres':      'Genres',
 
     'player.play':          'Play preview',
     'player.pause':         'Pause',
+    'player.loading':          'Loading audio...',
+    'player.unavailable':          'Audio unavailable',
+    'player.preview.error':          'Preview unavailable',
+    'game.error.msg':          'Unable to load the song. Check your connection and try again.',
+    'aria.artist.suggestions':          'Artist suggestions',
+    'aria.loading.track':          'Loading next song...',
+    'aria.loading.lb':          'Loading leaderboard',
+    'aria.search.close':          'Close',
 
     'question.sr':          'Listen to the preview and pick the correct artist and title.',
     'question.cover.alt':   'Album cover — try to guess the song!',
@@ -136,6 +151,10 @@ export const TRANSLATIONS = {
     'prize.nextLevel':      'Next level:',
     'prize.answers':        '{n} answers',
     'prize.multiplier':     'multiplier ×{n}',
+    'prize.msg.master':          "You're a music Master!",
+    'prize.msg.expert':          "You're a true music expert!",
+    'prize.msg.arcade':          "Great, you're improving!",
+    'prize.msg.default':          'Nice! Ready for the next level?',
 
     'retry.playAgain':      'Play again with {name}',
     'retry.or':             'or',
@@ -159,12 +178,10 @@ export const TRANSLATIONS = {
 
     'game.title':           'Play — Music Roulette',
     'game.score.aria':      'Score: {score}',
-    'game.error.title':     'Loading error',
     'game.error.retry':     'Retry',
 
     'search.placeholder':   'Search for an artist...',
     'search.notfound':      'No results for "{q}"',
-    'search.error':         'Search error. Please try again.',
 
     'lb.title':             '🏆 Hall of Fame',
     'lb.subtitle':          'The best Music Roulette players',
@@ -196,13 +213,20 @@ export const TRANSLATIONS = {
 
     'genres.title':         'Elige el género',
     'genres.subtitle':      'Escucha el fragmento y adivina artista y título',
-    'genres.play':          'Jugar con {name}',
 
     'nav.back.home':        'Inicio',
     'nav.back.genres':      'Géneros',
 
     'player.play':          'Reproducir fragmento',
     'player.pause':         'Pausar',
+    'player.loading':          'Cargando audio...',
+    'player.unavailable':          'Audio no disponible',
+    'player.preview.error':          'Vista previa no disponible',
+    'game.error.msg':          'No se pudo cargar la canción. Comprueba la conexión e inténtalo de nuevo.',
+    'aria.artist.suggestions':          'Sugerencias de artistas',
+    'aria.loading.track':          'Cargando siguiente canción...',
+    'aria.loading.lb':          'Cargando clasificación',
+    'aria.search.close':          'Cerrar',
 
     'question.sr':          'Escucha el fragmento y elige el artista y título correctos.',
     'question.cover.alt':   'Portada del álbum — ¡intenta adivinar la canción!',
@@ -216,6 +240,10 @@ export const TRANSLATIONS = {
     'prize.nextLevel':      'Siguiente nivel:',
     'prize.answers':        '{n} respuestas',
     'prize.multiplier':     'multiplicador ×{n}',
+    'prize.msg.master':          '¡Eres un Master de la música!',
+    'prize.msg.expert':          '¡Eres un verdadero experto musical!',
+    'prize.msg.arcade':          '¡Genial, estás mejorando!',
+    'prize.msg.default':          '¡Bien! ¿Listo para el siguiente nivel?',
 
     'retry.playAgain':      'Jugar de nuevo con {name}',
     'retry.or':             'o',
@@ -239,12 +267,10 @@ export const TRANSLATIONS = {
 
     'game.title':           'Jugar — Music Roulette',
     'game.score.aria':      'Puntuación: {score}',
-    'game.error.title':     'Error al cargar',
     'game.error.retry':     'Reintentar',
 
     'search.placeholder':   'Buscar un artista...',
     'search.notfound':      'Sin resultados para "{q}"',
-    'search.error':         'Error en la búsqueda. Inténtalo de nuevo.',
 
     'lb.title':             '🏆 Hall of Fame',
     'lb.subtitle':          'Los mejores jugadores de Music Roulette',
@@ -276,13 +302,20 @@ export const TRANSLATIONS = {
 
     'genres.title':         'Choisir le genre',
     'genres.subtitle':      "Écoute l'extrait et devine l'artiste et le titre",
-    'genres.play':          'Jouer avec {name}',
 
     'nav.back.home':        'Accueil',
     'nav.back.genres':      'Genres',
 
     'player.play':          "Lire l'extrait",
     'player.pause':         'Pause',
+    'player.loading':          'Chargement audio...',
+    'player.unavailable':          'Audio indisponible',
+    'player.preview.error':          'Aperçu indisponible',
+    'game.error.msg':          'Impossible de charger la chanson. Vérifie ta connexion et réessaie.',
+    'aria.artist.suggestions':          "Suggestions d'artistes",
+    'aria.loading.track':          'Chargement de la prochaine chanson...',
+    'aria.loading.lb':          'Chargement du classement',
+    'aria.search.close':          'Fermer',
 
     'question.sr':          "Écoute l'extrait et choisis l'artiste et le titre corrects.",
     'question.cover.alt':   "Pochette de l'album — essaie de deviner la chanson !",
@@ -296,6 +329,10 @@ export const TRANSLATIONS = {
     'prize.nextLevel':      'Niveau suivant :',
     'prize.answers':        '{n} réponses',
     'prize.multiplier':     'multiplicateur ×{n}',
+    'prize.msg.master':          'Tu es un Master de la musique !',
+    'prize.msg.expert':          'Tu es un vrai expert musical !',
+    'prize.msg.arcade':          'Super, tu progresses !',
+    'prize.msg.default':          'Bravo ! Prêt pour le niveau suivant ?',
 
     'retry.playAgain':      'Rejouer avec {name}',
     'retry.or':             'ou',
@@ -319,12 +356,10 @@ export const TRANSLATIONS = {
 
     'game.title':           'Jouer — Music Roulette',
     'game.score.aria':      'Score : {score}',
-    'game.error.title':     'Erreur de chargement',
     'game.error.retry':     'Réessayer',
 
     'search.placeholder':   'Chercher un artiste...',
     'search.notfound':      'Aucun résultat pour « {q} »',
-    'search.error':         'Erreur de recherche. Réessaie.',
 
     'lb.title':             '🏆 Hall of Fame',
     'lb.subtitle':          'Les meilleurs joueurs de Music Roulette',
@@ -356,13 +391,20 @@ export const TRANSLATIONS = {
 
     'genres.title':         'Genre wählen',
     'genres.subtitle':      'Höre die Vorschau und errate Künstler und Titel',
-    'genres.play':          'Spielen mit {name}',
 
     'nav.back.home':        'Startseite',
     'nav.back.genres':      'Genres',
 
     'player.play':          'Vorschau abspielen',
     'player.pause':         'Pause',
+    'player.loading':          'Audio wird geladen...',
+    'player.unavailable':          'Audio nicht verfügbar',
+    'player.preview.error':          'Vorschau nicht verfügbar',
+    'game.error.msg':          'Song konnte nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.',
+    'aria.artist.suggestions':          'Künstlervorschläge',
+    'aria.loading.track':          'Nächsten Song laden...',
+    'aria.loading.lb':          'Rangliste wird geladen',
+    'aria.search.close':          'Schließen',
 
     'question.sr':          'Höre die Vorschau und wähle den richtigen Künstler und Titel.',
     'question.cover.alt':   'Album-Cover — versuche den Song zu erraten!',
@@ -376,6 +418,10 @@ export const TRANSLATIONS = {
     'prize.nextLevel':      'Nächstes Level:',
     'prize.answers':        '{n} Antworten',
     'prize.multiplier':     'Multiplikator ×{n}',
+    'prize.msg.master':          'Du bist ein Musik-Master!',
+    'prize.msg.expert':          'Du bist ein echter Musikexperte!',
+    'prize.msg.arcade':          'Toll, du wirst besser!',
+    'prize.msg.default':          'Gut gemacht! Bereit für das nächste Level?',
 
     'retry.playAgain':      'Nochmal spielen mit {name}',
     'retry.or':             'oder',
@@ -399,12 +445,10 @@ export const TRANSLATIONS = {
 
     'game.title':           'Spielen — Music Roulette',
     'game.score.aria':      'Punktestand: {score}',
-    'game.error.title':     'Ladefehler',
     'game.error.retry':     'Erneut versuchen',
 
     'search.placeholder':   'Künstler suchen...',
     'search.notfound':      'Keine Ergebnisse für „{q}"',
-    'search.error':         'Suchfehler. Bitte erneut versuchen.',
 
     'lb.title':             '🏆 Hall of Fame',
     'lb.subtitle':          'Die besten Music Roulette Spieler',

@@ -6,6 +6,7 @@ import { getNextLevel } from '@/lib/levels'
 import type { Level } from '@/lib/levels'
 import { RetryButtons } from './RetryButtons'
 import { useLocale } from '@/hooks/useLocale'
+import type { TranslationKey } from '@/lib/i18n'
 import styles from './Prize.module.css'
 
 interface PrizeProps {
@@ -34,11 +35,11 @@ export function Prize({ level, gameName, onRestart, onArtistSelect, onAdvanceLev
       className={styles.prize}
       role="status"
       aria-live="assertive"
-      aria-label={t('prize.label', { message: prize.message })}
+      aria-label={t('prize.label', { message: t(prize.messageKey as TranslationKey) })}
     >
       <div className={styles.emoji} aria-hidden="true">{prize.emoji}</div>
       <h2 className={styles.title}>{t('prize.title')}</h2>
-      <p className={styles.message}>{prize.message}</p>
+      <p className={styles.message}>{t(prize.messageKey as TranslationKey)}</p>
 
       {nextLevel && (
         <div className={styles.nextLevel}>

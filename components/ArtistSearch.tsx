@@ -94,7 +94,7 @@ export function ArtistSearch({ onSelect }: ArtistSearchProps) {
       id="artist-suggestions"
       className={styles.sheetList}
       role="listbox"
-      aria-label="Suggerimenti artisti"
+      aria-label={t('aria.artist.suggestions')}
     >
       {results.map(artist => (
         <li
@@ -167,7 +167,7 @@ export function ArtistSearch({ onSelect }: ArtistSearchProps) {
                 type="button"
                 className={styles.sheetClose}
                 onClick={() => setIsOpen(false)}
-                aria-label="Chiudi"
+                aria-label={t('aria.search.close')}
               >✕</button>
             </div>
             {results.length > 0
