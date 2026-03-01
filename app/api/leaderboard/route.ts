@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
       SELECT id, nickname, score, level, level_name, genre, avg_time_ms, created_at
       FROM scores
       ORDER BY score DESC
-      LIMIT 50
+      LIMIT 30
     ` as LeaderboardEntry[]
 
     return NextResponse.json(rows, {
