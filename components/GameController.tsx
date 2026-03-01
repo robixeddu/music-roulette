@@ -113,7 +113,7 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     setSelectedId(null)
     resetTimer()
     // Usa il prefetch se già disponibile, altrimenti fetcha ora
-    const p = prefetchRef.current ?? fetchQuestion(mode, usedIdsRef.current)
+    const p = prefetchRef.current ?? fetchQuestion(mode, usedIdsRef.current, usedArtistsRef.current)
     prefetchRef.current = null
     questionPromiseRef.current = p
     setQuestionPromise(p)
@@ -176,11 +176,11 @@ export function GameController({ firstQuestionPromise, gameMode: initialMode }: 
     if (newState.status === 'playing') {
       // Prefetch immediato — in parallelo al delay visivo del feedback
       questionPromiseRef.current.then(q => {
-        q.options.forEach(o => usedIdsRef.current.add(o.id))
-        // Traccia sempre l'artista della correct — evita ripetizioni anche dopo risposta sbagliata
-        const correctLabel = q.options.find(o => o.isCorrect)?.label ?? ''
-        const correctArtist = correctLabel.includes(' — ') ? correctLabel.split(' — ')[0] : ''
-        if (correctArtist) usedArtistsRef.current.add(correctArtist)
+        q.options.forEach(o => {
+          usedIdsRef.current.add(o.id)
+          // Traccia tutti gli artisti (correct + fakes) — nessuna band si ripete nel game
+          if (o.artistName) usedArtistsRef.current.add(o.artistName)
+        })
         prefetchRef.current = fetchQuestion(gameMode, usedIdsRef.current, usedArtistsRef.current)
       })
 

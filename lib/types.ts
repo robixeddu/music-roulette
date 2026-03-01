@@ -44,6 +44,7 @@ export interface TrackOption {
   id: number
   label: string
   isCorrect: boolean
+  artistName: string
 }
 
 export interface TrackQuestion {

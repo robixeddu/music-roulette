@@ -41,24 +41,28 @@ export function AudioPlayer({ src, onFirstPlay, fadeOutSeconds = 4, playBtnRef, 
   useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
 
 
-  // Autoplay: tenta play() appena l'audio è pronto
+  // Autoplay: reagisce a loadState === 'ready' invece di ascoltare canplay.
+  // Il vecchio approccio basato su addEventListener('canplay', ...) aveva una race
+  // condition: quando il prefetch era già in cache, canplay sparava tra il reset-effect
+  // ([src]) e questo effect, quindi il listener non era ancora registrato e l'autoplay
+  // non partiva. Dipendere da loadState elimina la race — React garantisce che
+  // questo effect giri dopo ogni render in cui loadState diventa 'ready'.
+  const autoplayFiredRef = useRef(false)
   useEffect(() => {
-    if (!autoplay) return
+    autoplayFiredRef.current = false
+  }, [src])
+  useEffect(() => {
+    if (!autoplay || loadState !== 'ready' || autoplayFiredRef.current) return
+    autoplayFiredRef.current = true
     const audio = audioRef.current
     if (!audio) return
-    const tryPlay = () => {
-      audio.volume = 1
-      audio.play().then(() => {
-        if (!hasPlayedRef.current) { hasPlayedRef.current = true; onFirstPlay?.() }
-      }).catch(() => {
-        // Autoplay bloccato dal browser (policy utente) — silenzioso
-      })
-    }
-    if (loadState === 'ready') { tryPlay(); return }
-    audio.addEventListener('canplay', tryPlay, { once: true })
-    return () => audio.removeEventListener('canplay', tryPlay)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoplay, src])
+    audio.volume = 1
+    audio.play().then(() => {
+      if (!hasPlayedRef.current) { hasPlayedRef.current = true; onFirstPlay?.() }
+    }).catch(() => {
+      // Autoplay bloccato dal browser (policy utente) — silenzioso
+    })
+  }, [autoplay, loadState, src, onFirstPlay])
 
   const startFadeLoop = useCallback(() => {
     const loop = () => {
