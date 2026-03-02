@@ -95,14 +95,15 @@ export default function LeaderboardPage() {
         <header className={styles.header}>
           <h1 className={styles.title}>{t('lb.title')}</h1>
           <p className={styles.subtitle}>{t('lb.subtitle')}</p>
-          {lastUpdated && (
-            <p className={styles.updated} aria-live="polite">
-              {isRefreshing
-                ? t('lb.updating')
-                : t('lb.updated', { time: lastUpdated.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }) })
-              }
-            </p>
-          )}
+          {/* Sempre presente: bone durante loading, testo reale dopo — evita CLS */}
+          <p className={`${styles.updated} ${loading ? `${styles.bone} ${styles.boneUpdated}` : ''}`} aria-live="polite">
+            {!loading && (lastUpdated
+              ? (isRefreshing
+                  ? t('lb.updating')
+                  : t('lb.updated', { time: lastUpdated.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }))
+              : ' '
+            )}
+          </p>
         </header>
 
         {/* Tab bar */}
@@ -126,19 +127,25 @@ export default function LeaderboardPage() {
         </div>
 
         {loading ? (
-          <div className={styles.loading} aria-label={t('aria.loading.lb')}>
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className={`${styles.entry} ${styles.entrySkeleton}`}>
-                <div className={`${styles.bone} ${styles.boneRank}`} />
-                <div className={styles.info}>
-                  <div className={`${styles.bone} ${styles.boneNickname}`} />
-                  <div className={`${styles.bone} ${styles.boneMeta}`} />
+          <>
+            {/* Placeholder .colsHeader — mantiene l'altezza delle label colonne */}
+            <div className={`${styles.colsHeader} ${styles.bone} ${styles.boneColsHeader}`} aria-hidden="true" />
+
+            {/* Entry skeletons */}
+            <div className={styles.loading} aria-label={t('aria.loading.lb')}>
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className={`${styles.entry} ${styles.entrySkeleton}`}>
+                  <div className={`${styles.bone} ${styles.boneRank}`} />
+                  <div className={styles.info}>
+                    <div className={`${styles.bone} ${styles.boneNickname}`} />
+                    <div className={`${styles.bone} ${styles.boneMeta}`} />
+                  </div>
+                  <div className={`${styles.bone} ${styles.boneScore}`} />
+                  <div className={`${styles.bone} ${styles.boneTime}`} />
                 </div>
-                <div className={`${styles.bone} ${styles.boneScore}`} />
-                <div className={`${styles.bone} ${styles.boneTime}`} />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         ) : visible.length === 0 ? (
           <div className={styles.empty}>
             <p className={styles.emptyText}>

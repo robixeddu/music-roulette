@@ -42,12 +42,43 @@
 
 /* Skeleton bones */
 .boneRank     { width: 1.5rem; height: 1rem; border-radius: 4px; margin: 0 auto; }
-.boneNickname { width: 70%; height: 0.875rem; border-radius: 4px; }
-.boneMeta     { width: 90%; height: 0.625rem; border-radius: 4px; margin-top: 0.25rem; }
+.boneNickname { width: 70%; height: 1.15rem;  border-radius: 4px; }
+.boneMeta     { width: 90%; height: 0.78rem;  border-radius: 4px; }
 .boneScore    { width: 2rem;  height: 1.1rem; border-radius: 4px; margin-left: auto; }
 .boneTime     { width: 3rem;  height: 0.75rem; border-radius: 4px; margin-left: auto; margin-top: 0.2rem; }
 
-/* .bone e @keyframes shimmer definiti in globals.css */
+/* Placeholder .updated — stessa altezza del testo "Updated at..." */
+.boneUpdated {
+  width: 8rem;
+  height: 0.8rem;           /* simula font-size 0.65rem con line-height */
+  border-radius: 4px;
+  margin: 0.25rem auto 0;   /* margin-top identico a .updated */
+  display: block;
+}
+
+/* Placeholder .colsHeader — div con colsHeader come classe base, sovrascrive display */
+.boneColsHeader {
+  display: block !important;   /* override grid di .colsHeader */
+  height: 0.8rem;              /* simula il testo delle label colonne */
+  border-radius: 4px;
+  /* padding-bottom ereditato da .colsHeader mantiene lo spazio corretto */
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.bone {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 25%,
+    var(--bg-elevated) 50%,
+    var(--bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
 
 /* Empty state */
 .empty {

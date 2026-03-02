@@ -1,34 +1,13 @@
-import { Suspense } from 'react'
-import { GameController } from '@/components/GameController'
-import { GameSkeleton } from '@/components/GameSkeleton'
+import { GameControllerClient } from '@/components/GameControllerClient'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { GameNav } from '@/components/GameNav'
 import { getThemeForGenre, getGenreById, GENRES, DEFAULT_THEME } from '@/lib/genres'
 import type { Metadata } from 'next'
-import type { TrackQuestion } from '@/lib/types'
 
 export const metadata: Metadata = { title: 'Gioca — Music Roulette' }
 
 interface GamePageProps {
   searchParams: Promise<{ genreId?: string; artistName?: string }>
-}
-
-async function getFirstQuestion(
-  mode: { type: 'genre'; genreId: string } | { type: 'artist'; artistName: string }
-): Promise<TrackQuestion> {
-  const { fetchTracksByGenre, fetchTracksByArtist, pickQuestionTracks, buildQuestion, buildArtistQuestion } =
-    await import('@/lib/itunes')
-
-  if (mode.type === 'artist') {
-    const tracks = await fetchTracksByArtist(mode.artistName)
-    const { correct, fakes } = pickQuestionTracks(tracks, 3)
-    return buildArtistQuestion(correct, fakes)
-  }
-
-  const genre = getGenreById(mode.genreId) ?? GENRES[0]
-  const tracks = await fetchTracksByGenre(genre.searchTerms)
-  const { correct, fakes } = pickQuestionTracks(tracks, 3)
-  return buildQuestion(correct, fakes)
 }
 
 export default async function GamePage({ searchParams }: GamePageProps) {
@@ -37,21 +16,17 @@ export default async function GamePage({ searchParams }: GamePageProps) {
   const genreId    = params.genreId ?? GENRES[0].id
   const genre      = getGenreById(genreId) ?? GENRES[0]
 
-  const navTitle  = artistName ? artistName : genre.name
-  const theme     = artistName ? DEFAULT_THEME : getThemeForGenre(genreId)
-  const mode      = artistName
+  const navTitle = artistName ? artistName : genre.name
+  const theme    = artistName ? DEFAULT_THEME : getThemeForGenre(genreId)
+  const mode     = artistName
     ? { type: 'artist' as const, artistName }
-    : { type: 'genre' as const, genreId }
-
-  const firstQuestionPromise = getFirstQuestion(mode)
+    : { type: 'genre'  as const, genreId }
 
   return (
     <ThemeProvider theme={theme}>
       <div className="page">
         <GameNav mode={artistName ? 'artist' : 'genre'} title={navTitle} />
-        <Suspense fallback={<GameSkeleton />}>
-          <GameController firstQuestionPromise={firstQuestionPromise} gameMode={mode} />
-        </Suspense>
+        <GameControllerClient gameMode={mode} />
       </div>
     </ThemeProvider>
   )

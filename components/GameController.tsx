@@ -72,25 +72,30 @@ function playFeedbackSound(correct: boolean) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface GameControllerProps {
-  firstQuestionPromise: Promise<TrackQuestion>
+  firstQuestionPromise?: Promise<TrackQuestion>
   gameMode: GameMode
 }
 
 // GameController is already 'use client'
-export function GameController({ firstQuestionPromise, gameMode: initialMode }: GameControllerProps) {
+export function GameController({ firstQuestionPromise: propPromise, gameMode: initialMode }: GameControllerProps) {
+  // lazy initializer: corre solo sul client (grazie a ssr:false nel dynamic import)
+  // garantisce che la promise sia sempre pending al primo render → skeleton visibile
+  const [initPromise] = useState<Promise<TrackQuestion>>(
+    () => propPromise ?? fetchQuestion(initialMode, new Set())
+  )
   const { t } = useLocale()
   const router = useRouter()
   const [gameMode, setGameMode]     = useState<GameMode>(initialMode)
   const [gameState, setGameState]   = useState<GameState>(makeInitialState())
   const [selectedId, setSelectedId] = useState<number | null>(null)
-  const [questionPromise, setQuestionPromise] = useState(firstQuestionPromise)
+  const [questionPromise, setQuestionPromise] = useState(initPromise)
   const [level, setLevel] = useState<Level>({ id: 1, name: 'Rookie', winScore: 5, multiplier: 1, feedbackDelayMs: 1500 })
 
   useEffect(() => { setLevel(loadLevel()) }, [])
 
   const usedIdsRef         = useRef<Set<number>>(new Set())
   const usedArtistsRef     = useRef<Set<string>>(new Set())
-  const questionPromiseRef = useRef<Promise<TrackQuestion>>(firstQuestionPromise)
+  const questionPromiseRef = useRef<Promise<TrackQuestion>>(initPromise)
   const playStartRef       = useRef<number | null>(null)
   const timeSamplesRef     = useRef<number[]>([])
   // Prefetch: la prossima domanda viene fetchata subito al click, non dopo il delay
