@@ -70,7 +70,7 @@ describe('getPrize', () => {
   it('ritorna il trofeo per Master', () => {
     const prize = getPrize('Master')
     expect(prize.emoji).toBe('👑')
-    expect(prize.message).toBeTruthy()
+    expect(prize.messageKey).toBeTruthy()
   })
 
   it('ritorna il trofeo per Expert', () => {

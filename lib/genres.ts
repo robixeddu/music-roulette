@@ -224,12 +224,12 @@ export const GENRES: Genre[] = [
       "7 Year Bitch",
       "Gruntruck",
       "Truly",
-      "Brad",
+      "Stone Temple Pilots",
       // "Flop", // no iTunes preview
       "Gas Huffer",
       "My Sister's Machine",
       // "Goodness", // no iTunes preview
-      "Paw",
+      //"Silverchair",
       // "Inflatable Soule", // no iTunes preview
     ],
   },

@@ -39,11 +39,26 @@ function isUsableTrack(t: iTunesTrack, searchedArtist: string): boolean {
   const haystack = `${t.trackName} ${t.artistName}`
   if (JUNK_PATTERNS.some(p => p.test(haystack))) return false
 
-  // Verifica che l'artista restituito sia effettivamente quello cercato
-  // (previene contaminazione da artisti omonimi o collaborazioni marginali)
-  const searched = searchedArtist.toLowerCase().replace(/[^a-z0-9]/g, '')
-  const returned = t.artistName.toLowerCase().replace(/[^a-z0-9]/g, '')
-  if (!returned.includes(searched) && !searched.includes(returned)) return false
+  // Verifica che l'artista restituito sia effettivamente quello cercato.
+  // Normalizza solo caratteri ASCII alfanumerici (ignora coreano, emoji, punteggiatura):
+  //   "IU (아이유)" → "iu",  "Neu!" → "neu",  "f(x)" → "fx",  "AC/DC" → "acdc"
+  const normalizeAscii = (s: string) =>
+    Array.from(s.toLowerCase()).filter(c => /[a-z0-9]/.test(c)).join('')
+
+  const searched = normalizeAscii(searchedArtist)
+  const returned = normalizeAscii(t.artistName)
+
+  if (!searched || !returned) return false
+
+  if (searched.length <= 5) {
+    // Nomi corti: solo match esatto dopo normalizzazione.
+    // Previene: "paw"→"pawpatrol", "brad"→"bradpaisley", "free"→"freedomwilliams",
+    //           "love"→"loveunlimitedorchestra", "cast"→"broadcast", "x"→"xambassadors"
+    if (returned !== searched) return false
+  } else {
+    // Nomi lunghi: logica originale (substring match bidirezionale)
+    if (!returned.includes(searched) && !searched.includes(returned)) return false
+  }
 
   return true
 }
