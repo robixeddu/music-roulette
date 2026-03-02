@@ -150,7 +150,7 @@ export function GameOver({
 
             {submitState === 'success' ? (
               <div className={styles.saved}>
-                <p>{t('gameover.saved', { name: savedNickname }).replace(savedNickname, `__NAME__`).split('__NAME__').map((part, i) => i === 0 ? <span key={i}>{part}<strong>{savedNickname}</strong></span> : <span key={i}>{part}</span>)}</p>
+                <p>{t('gameover.saved', { name: savedNickname }).replace(savedNickname, `__NAME__`).split('__NAME__').map((part, i) => i === 0 ? <span key={i}>{part}<strong>{savedNickname}</strong> <br /></span> : <span key={i}>{part}</span>)}</p>
                 <a href="/leaderboard" className={`${btnStyles.btn} ${btnStyles.primary}`}>
                   {t('gameover.view')}
                 </a>
