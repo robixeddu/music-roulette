@@ -88,6 +88,7 @@ export function GameController({ firstQuestionPromise: propPromise, gameMode: in
   const [gameMode, setGameMode]     = useState<GameMode>(initialMode)
   const [gameState, setGameState]   = useState<GameState>(makeInitialState())
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [pendingTransition, setPendingTransition] = useState(false)
   const [questionPromise, setQuestionPromise] = useState(initPromise)
   const [level, setLevel] = useState<Level>({ id: 1, name: 'Rookie', winScore: 5, multiplier: 1, feedbackDelayMs: 1500 })
 
@@ -190,13 +191,17 @@ export function GameController({ firstQuestionPromise: propPromise, gameMode: in
       })
 
       setTimeout(() => nextQuestion(gameMode), level.feedbackDelayMs)
+    } else {
+      // won / lost: mostra feedback sull'ultima risposta prima di Prize/GameOver
+      setPendingTransition(true)
+      setTimeout(() => setPendingTransition(false), level.feedbackDelayMs)
     }
   }, [selectedId, gameState, nextQuestion, gameMode, level])
 
   const avgTimeMs = getAvgTimeMs()
   const leaderboardScore = calcLeaderboardScore(gameState.sessionScore, gameState.lives, level)
 
-  if (gameState.status === 'won') {
+  if (gameState.status === 'won' && !pendingTransition) {
     if (wonLevelRef.current.id >= MAX_LEVEL) {
       return (
         <GameOver
@@ -215,7 +220,7 @@ export function GameController({ firstQuestionPromise: propPromise, gameMode: in
     )
   }
 
-  if (gameState.status === 'lost') {
+  if (gameState.status === 'lost' && !pendingTransition) {
     return (
       <GameOver
         score={gameState.score} leaderboardScore={leaderboardScore}
