@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
     try {
       const threshold = await sql`
-        SELECT score FROM scores ORDER BY score DESC LIMIT 1 OFFSET 49
+        SELECT score FROM scores ORDER BY score DESC LIMIT 1 OFFSET 29
       ` as { score: number }[]
       const eligible = threshold.length === 0 || score > threshold[0].score
       return NextResponse.json({ eligible }, { headers: { 'Cache-Control': 'no-store' } })

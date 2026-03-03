@@ -160,4 +160,4 @@ All UI strings go through `t()` from `useLocale` — no hardcoded strings in com
 Scores split into three views: **Global**, **by Genre**, **by Artist**.  
 Detection is client-side: entries where `genre` matches a known genre id/name go to Genres, everything else (artist names) goes to Artists.
 
-Top 50 only. Server re-verifies eligibility before INSERT to prevent race conditions.
+Top 30 only. Server re-verifies eligibility before INSERT to prevent race conditions.
