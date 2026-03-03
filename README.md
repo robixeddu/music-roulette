@@ -161,3 +161,4 @@ Scores split into three views: **Global**, **by Genre**, **by Artist**.
 Detection is client-side: entries where `genre` matches a known genre id/name go to Genres, everything else (artist names) goes to Artists.
 
 Top 30 only. Server re-verifies eligibility before INSERT to prevent race conditions.
+
